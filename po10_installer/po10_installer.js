@@ -76,6 +76,12 @@ function init()
 {
 	debug('init!');
 	alive = true;
+	package_button = this.patcher.getnamed('package_button');
+	scripts_button = this.patcher.getnamed('scripts_button');
+	logs_button = this.patcher.getnamed('logs_button');
+	package_button.message('active', 0);
+	scripts_button.message('active', 0);
+	logs_button.message('active', 0);
 	node_script = this.patcher.getnamed('node_script');
 	//jweb = this.patcher.getnamed('jweb');
 	resolve_paths();
@@ -141,6 +147,7 @@ function resolve_paths()
 	getConformedPath('appPath', this.max.apppath);
 	getConformedPath('rootPath', this.max.apppath.split('/')[0]);
 	//if(nodeIsRunning()){node_script.message('update_paths');}
+	package_button.message('active', 1);
 }
 
 //parse the Maxuser path to find the correct preferences/ableton/log.txt
@@ -268,5 +275,9 @@ function returnConformedPath(type, path_boot, path_absolute)
 	pathsDict.set('absolute::'+type, conformedPaths.absolute[type]);
 }
 
-
+function package_installed()
+{
+	scripts_button.message('active', 1);
+	logs_button.message('active', 1);
+}
 forceload(this);

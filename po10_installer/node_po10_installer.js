@@ -57,7 +57,8 @@ const update_paths = () => {
 		pathsDict = dict;
 	}).catch((err) => {
 		debug('get_path error:', err);
-	})
+	});
+
 }
 
 maxApi.addHandler("update_paths", async () => {
@@ -106,6 +107,7 @@ maxApi.addHandler("installPackage", async () => {
 		await doDownload(PO10_URL, po10Path);
 
 		debug("Success!");
+		maxApi.outlet(['package_installed']);
 	}
 	catch (err) {
 		debug(err);
@@ -140,6 +142,7 @@ maxApi.addHandler("install_python_scripts", async () => {
 		await copy(user_python_path, PythonPath);
 	}
 	debug('Python Scripts finished copying.');
+
 });
 
 maxApi.addHandler('write_log', async() => {
