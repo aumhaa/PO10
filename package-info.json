@@ -1,0 +1,42 @@
+{
+	"author" : "amounra",
+	"authors" : [  ],
+	"description" : "PO10 Controller scripts and custom devices for Stephan Bodzin.",
+	"displayname" : "",
+	"extends" : "",
+	"extensible" : 0,
+	"homepatcher" : "",
+	"max_version_max" : "none",
+	"max_version_min" : "8.0",
+	"name" : "aumhaa_PO10",
+	"os" : 	{
+		"macintosh" : 		{
+			"platform" : [ "ia32", "x64" ],
+			"min_version" : "none"
+		}
+,
+		"windows" : 		{
+			"platform" : [ "ia32", "x64" ],
+			"min_version" : "none"
+		}
+
+	}
+,
+	"package_extra" : 	{
+		"reverse_domain" : "com.aumhaa",
+		"copyright" : "Copyright (c) 2018 aumhaa"
+	}
+,
+	"tags" : [ "Max for Live", "Python Scripts", "Stephan Bodzin", "PO10"],
+	"version" : "1.0",
+	"website" : "https://aumhaa.com",
+	"filelist" : 	{
+		"examples" : [ ],
+		"externals" : [ ],
+		"patchers" : [ ],
+		"help" : [ ],
+		"docs" : [ ],
+		"code" : [ ],
+		"extras" : [ ]
+	}
+}
