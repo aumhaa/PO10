@@ -94,16 +94,16 @@ const removeDir = async (dir) => {
 
 maxApi.addHandler("installPackage", async () => {
 
-	m4m8Path = join(pathsDict.boot.packagePath, MOD_PACKAGE_DIR_NAME);
-	debug('m4m8 path is:', m4m8Path);
+	po10Path = join(pathsDict.boot.packagePath, PO10_PACKAGE_DIR_NAME);
+	debug('po10 path is:', po10Path);
 	try {
-		if (inProgress) throw new Error("m4m8 download is already in progress. Please wait.");
+		if (inProgress) throw new Error("po10 download is already in progress. Please wait.");
 
 		inProgress = true;
 
 		await ensureDirAsync(pathsDict.boot.packagePath);
 
-		await doDownload(M4M8_URL, m4m8Path);
+		await doDownload(PO10_URL, po10Path);
 
 		debug("Success!");
 	}
@@ -132,7 +132,7 @@ maxApi.addHandler("install_python_scripts", async () => {
 	//debug('PythonPath:', PythonPath);
 	let python_path_exists = await pathExistsAsync(PythonPath);
 	//debug('PythonPath exists...');
-	let user_python_path = join(m4m8Path, 'Python Scripts');
+	let user_python_path = join(po10Path, 'Python Scripts');
 	let user_python_path_exists = await pathExistsAsync(user_python_path);
 	if((python_path_exists)&&(user_python_path_exists))
 	{
