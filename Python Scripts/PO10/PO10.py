@@ -8,78 +8,45 @@ import math
 import sys
 
 """ _Framework files """
-from _Framework.Dependency import inject
-from _Framework.ButtonElement import ButtonElement
-from _Framework.ButtonMatrixElement import ButtonMatrixElement
-from _Framework.ChannelStripComponent import ChannelStripComponent
-from _Framework.ClipSlotComponent import ClipSlotComponent
-from _Framework.CompoundComponent import CompoundComponent
-from _Framework.ControlElement import ControlElement, ControlElementClient
-from _Framework.ControlSurface import OptimizedControlSurface, ControlSurface
-from _Framework.ControlSurfaceComponent import ControlSurfaceComponent
-from _Framework.DeviceComponent import DeviceComponent
-from _Framework.EncoderElement import EncoderElement
-from _Framework.InputControlElement import *
-#from _Framework.MixerComponent import MixerComponent
-from _Framework.ModeSelectorComponent import ModeSelectorComponent
-from _Framework.NotifyingControlElement import NotifyingControlElement
-from _Framework.SceneComponent import SceneComponent
-from _Framework.SessionComponent import SessionComponent
-from _Framework.SessionZoomingComponent import SessionZoomingComponent	#DeprecatedSessionZoomingComponent as SessionZoomingComponent
-from _Framework.SliderElement import SliderElement
-from _Framework.TransportComponent import TransportComponent
-from _Framework.ModesComponent import EnablingModesComponent, DelayMode, CompoundMode, AddLayerMode, LayerMode, MultiEntryMode, ModesComponent, SetAttributeMode, ModeButtonBehaviour, CancellableBehaviour, AlternativeBehaviour, ReenterBehaviour, DynamicBehaviourMixin, ExcludingBehaviourMixin, ImmediateBehaviour, LatchingBehaviour, ModeButtonBehaviour
-from _Framework.Layer import Layer
-from _Framework.SubjectSlot import SubjectEvent, subject_slot, subject_slot_group
-from _Framework.Task import *
-#from _Framework.M4LInterfaceComponent import M4LInterfaceComponent
-from _Framework.ComboElement import ComboElement, DoublePressElement, MultiElement, DoublePressContext
-from _Framework.Skin import Skin
-from _Framework.Profile import profile
+from ableton.v2.control_surface import PrioritizedResource
+from ableton.v2.control_surface.elements.button import ButtonElement
+from ableton.v2.control_surface.elements.button_matrix import ButtonMatrixElement
+from ableton.v2.control_surface.components.channel_strip import ChannelStripComponent
+from ableton.v2.control_surface.component import Component
+from ableton.v2.control_surface.input_control_element import *
+from ableton.v2.control_surface.components.scene import SceneComponent
+from ableton.v2.control_surface.components.session import SessionComponent
+from ableton.v2.control_surface.components.session_navigation import SessionNavigationComponent
+from ableton.v2.control_surface.components.session_ring import SessionRingComponent
+from ableton.v2.control_surface.mode import DelayMode, CompoundMode, AddLayerMode, LayerMode, ModesComponent, ModeButtonBehaviour #, CancellableBehaviour
+from ableton.v2.control_surface.layer import Layer
+from ableton.v2.base.event import listens, listens_group
+from ableton.v2.base.task import *
+from ableton.v2.control_surface.compound_element import CompoundElement
+from ableton.v2.control_surface.skin import Skin
 
 """Imports from the Monomodular Framework"""
-from _Mono_Framework.MonoEncoderElement import CodecEncoderElement, MonoEncoderElement
-from _Mono_Framework.MonoBridgeElement import MonoBridgeElement
-from _Mono_Framework.MonoButtonElement import MonoButtonElement
-from _Mono_Framework.ResetSendsComponent import ResetSendsComponent
-from _Mono_Framework.DetailViewControllerComponent import DetailViewControllerComponent
-from _Mono_Framework.DeviceSelectorComponent import NewDeviceSelectorComponent as DeviceSelectorComponent
-from _Mono_Framework.MonoDeviceComponent import MonoDeviceComponent
-from _Mono_Framework.DeviceNavigator import DeviceNavigator
-from _Mono_Framework.MonoM4LInterfaceComponent import MonoM4LInterfaceComponent
-from _Mono_Framework.MonoMixerComponent import MixerComponent
-from _Mono_Framework.MonoModes import SendLividSysexMode, SendSysexMode, CancellableBehaviourWithRelease, ColoredCancellableBehaviourWithRelease, MomentaryBehaviour, BicoloredMomentaryBehaviour, DefaultedBehaviour
-from _Mono_Framework.LiveUtils import *
-from _Mono_Framework.Debug import *
-from _Mono_Framework.Mod import *
-from _Mono_Framework.LividColors import *
-from _Mono_Framework.LividUtilities import LividSettings
-from _Mono_Framework.MonoInstrumentComponent import *
-from _Mono_Framework.TranslationComponent import TranslationComponent
-
-#from Livid_CNTRLR_2.Cntrlr import *
+from aumhaa.v2.control_surface.components.device import DeviceComponent
+from aumhaa.v2.control_surface.elements.mono_encoder import CodecEncoderElement, MonoEncoderElement
+from aumhaa.v2.control_surface.elements.mono_bridge import MonoBridgeElement
+from aumhaa.v2.control_surface.elements.mono_button import MonoButtonElement
+from aumhaa.v2.control_surface.components.reset_sends import ResetSendsComponent
+from aumhaa.v2.control_surface.components.device_selector import DeviceSelectorComponent
+from aumhaa.v2.control_surface.mono_modes import CancellableBehaviour, CancellableBehaviourWithRelease
+from aumhaa.v2.base.debug import *
+from aumhaa.v2.control_surface.mod import *
+from aumhaa.v2.livid.colors import *
+from aumhaa.v2.livid.utilities import *
+from aumhaa.v2.control_surface.components.mono_instrument import *
+from aumhaa.v2.control_surface.components.translation import TranslationComponent
+from aumhaa.v2.livid import LividControlSurface
 
 debug = initialize_debug()
-
 
 """Custom files, overrides, and files from other scripts"""
 from _Generic.Devices import *
 from ModDevices import *
 from Map import *
-
-
-#from Push.AutoArmComponent import AutoArmComponent
-#from Push.SessionRecordingComponent import *
-#from Push.ViewControlComponent import ViewControlComponent
-#from Push.DrumGroupComponent import DrumGroupComponent
-#from Push.StepSeqComponent import StepSeqComponent
-#from Push.PlayheadElement import PlayheadElement
-#from Push.PlayheadComponent import PlayheadComponent
-#from Push.GridResolution import GridResolution
-#from Push.ConfigurableButtonElement import ConfigurableButtonElement
-#from Push.LoopSelectorComponent import LoopSelectorComponent
-#from Push.Actions import CreateInstrumentTrackComponent, CreateDefaultTrackComponent, CaptureAndInsertSceneComponent, DuplicateDetailClipComponent, DuplicateLoopComponent, SelectComponent, DeleteComponent, DeleteSelectedClipComponent, DeleteSelectedSceneComponent, CreateDeviceComponent
-#from Push.SelectPlayingClipComponent import SelectPlayingClipComponent
 
 
 check_model = (240, 126, 127, 6, 1, 247)
@@ -109,7 +76,6 @@ def release_control(control):
 		control.release_parameter()
 
 
-
 def get_track(device):
 	def dig(obj):
 		if hasattr(obj, 'canonical_parent'):
@@ -128,8 +94,6 @@ def get_track(device):
 	return track
 
 
-
-
 class PO10EncoderElement(CodecEncoderElement):
 
 
@@ -145,23 +109,8 @@ class PO10EncoderElement(CodecEncoderElement):
 		self._parameter_last_num_value = 0
 
 
-class CancellableBehaviourWithRelease(CancellableBehaviour):
 
-
-	def release_delayed(self, component, mode):
-		component.pop_mode(mode)
-
-
-	def update_button(self, component, mode, selected_mode):
-		button = component.get_mode_button(mode)
-		groups = component.get_mode_groups(mode)
-		selected_groups = component.get_mode_groups(selected_mode)
-		value = (mode == selected_mode or bool(groups & selected_groups))*32 or 1
-		button.send_value(value, True)
-
-
-
-class ResetSendsComponent(ControlSurfaceComponent):
+class ResetSendsComponent(Component):
 
 
 	def __init__(self, script, *a, **k):
@@ -178,7 +127,7 @@ class ResetSendsComponent(ControlSurfaceComponent):
 		pass
 
 
-	@subject_slot('value')
+	@listens('value')
 	def _on_button_value(self, value):
 		if value:
 			self._on_button_value.subject and self.reset_send()
@@ -194,15 +143,15 @@ class ResetSendsComponent(ControlSurfaceComponent):
 
 
 	def tracks_to_use(self):
-		return self.song().tracks
+		return self.song.tracks
 
 
 	def returns_to_use(self):
-		return self.song().return_tracks
+		return self.song.return_tracks
 
 
 
-class DefaultsComponent(ControlSurfaceComponent):
+class DefaultsComponent(Component):
 
 
 	def __init__(self, parent, prefix = '@def', *a, **k):
@@ -223,7 +172,7 @@ class DefaultsComponent(ControlSurfaceComponent):
 		self.update()
 
 
-	@subject_slot('value')
+	@listens('value')
 	def _on_button_value(self, value):
 		if self.is_enabled():
 			if value:
@@ -237,15 +186,15 @@ class DefaultsComponent(ControlSurfaceComponent):
 
 	def set_defaults(self):
 		debug('set_defaults--------------------------------')
-		for track in self.song().tracks:
+		for track in self.song.tracks:
 			for device in self.enumerate_track_device(track):
 				if device.class_name.endswith('GroupDevice'):
 					self.scan_device(device)
-		for return_track in self.song().return_tracks:
+		for return_track in self.song.return_tracks:
 			for device in self.enumerate_track_device(return_track):
 				if device.class_name.endswith('GroupDevice'):
 					self.scan_device(device)
-		for device in self.enumerate_track_device(self.song().master_track):
+		for device in self.enumerate_track_device(self.song.master_track):
 			if device.class_name.endswith('GroupDevice'):
 				self.scan_device(device)
 
@@ -310,7 +259,7 @@ class PO10SessionComponent(SessionComponent):
 
 	def _do_show_highlight(self):
 		if self._highlighting_callback != None:
-			return_tracks = self.song().return_tracks
+			return_tracks = self.song.return_tracks
 			if len(return_tracks) > 0:
 				include_returns = return_tracks[0] in self.tracks_to_use()
 				self._show_highlight and self._highlighting_callback(self._track_offset, self._scene_offset, self.width(), self.height(), include_returns)
@@ -319,12 +268,12 @@ class PO10SessionComponent(SessionComponent):
 
 
 
-class ParamButton(ControlSurfaceComponent):
+class ParamButton(Component):
 
 
 	def __init__(self, parent, *a, **k):
 		super(ParamButton, self).__init__(*a, **k)
-		self._parent = parent
+		self._device_component_parent = parent
 		self._button = None
 		self._original_param = None
 		self._param = None
@@ -339,7 +288,7 @@ class ParamButton(ControlSurfaceComponent):
 		button and button.turn_off()
 
 
-	@subject_slot('value')
+	@listens('value')
 	def _on_button_value(self, value):
 		debug('_on_button_value', value)
 		if value > 0:
@@ -347,7 +296,7 @@ class ParamButton(ControlSurfaceComponent):
 			self._action()
 
 
-	@subject_slot('value')
+	@listens('value')
 	def _on_param_value_changed(self):
 		if self._type and self._param:
 			value = self._param.value
@@ -438,7 +387,7 @@ class ParamButton(ControlSurfaceComponent):
 						elif vals[0] == 'onoff':
 							self._action = self.toggle
 							self._type = 'tog'
-							self._param = self._parent._device.parameters[0]
+							self._param = self._device_component_parent._device.parameters[0]
 							self._on_param_value_changed.subject = self._param
 							break
 						elif vals[0] =='shft':
@@ -447,7 +396,7 @@ class ParamButton(ControlSurfaceComponent):
 							self._param = param
 							self._on_param_value_changed.subject = None
 						elif vals[0] == 'prm':
-							parameters = [p for p in self._parent._device.parameters]
+							parameters = [p for p in self._device_component_parent._device.parameters]
 							for parameter in parameters:
 								if parameter.name.startswith(vals[1]):
 									if len(vals)>3 and vals[2] == 'rst':
@@ -470,7 +419,7 @@ class ParamButton(ControlSurfaceComponent):
 							break
 
 
-	@subject_slot('name')
+	@listens('name')
 	def _on_param_name_changed(self):
 		debug('on_param_name_changed')
 		self._scan_param(self._original_param)
@@ -510,25 +459,30 @@ class ParamButton(ControlSurfaceComponent):
 
 	def shift(self):
 		debug('button shift action...')
-		self._parent._shift_param(self._param)
+		self._device_component_parent._shift_param(self._param)
 
 
 	def _set_all_to_defaults(self):
-		self._parent and self._parent.set_all_params_to_defaults()
+		self._device_component_parent and self._device_component_parent.set_all_params_to_defaults()
 
 
 
 class PO10DeviceComponent(DeviceComponent):
 
+	_send_controls = []
+	_send_feedback = []
+	_send_buttons = []
 
 	def __init__(self, *a, **k):
-		self._param_buttons = [ParamButton(self) for index in range(8)]
-		self._send_controls = []
-		self._send_feedback = []
-		self._send_buttons = []
+		#debug('PO10DeviceComponent:', register_component)
 		super(PO10DeviceComponent, self).__init__(*a, **k)
+		self._param_buttons = [ParamButton(parent = self) for index in range(8)]
 		self._shifted_parameters = []
 		self._show_msg_callback = self._msg_pass
+
+	@property
+	def _device(self):
+		return self._get_device()
 
 
 	def _shift_param(self, param):
@@ -561,7 +515,7 @@ class PO10DeviceComponent(DeviceComponent):
 		#self._on_parameter_button_value.subject = controls
 
 
-	@subject_slot('value')
+	@listens('value')
 	def _on_parameter_button_value(self, val, num, *a, **k):
 		debug('_on_parameter_button_value', a, k)
 		if val:
@@ -697,7 +651,7 @@ class PO10DeviceComponent(DeviceComponent):
 
 	def _current_send_track_details(self):
 		sends_list = [None for index in range(5)]
-		tracks = self.song().tracks
+		tracks = self.song.tracks
 		track_names = [track.name for track in tracks]
 		for number, name in enumerate(TRACK_NAMES_FOR_SENDS):
 			if name in track_names:
@@ -758,21 +712,21 @@ class PO10DeviceComponent(DeviceComponent):
 		self._on_send_button_value.subject = buttons
 
 
-	@subject_slot('value')
+	@listens('value')
 	def _on_send_button_value(self, *a, **k):
 		debug('_on_send_button_value', a, k)
 
 
 	def returns_to_use(self):
-		return self.song().return_tracks[:8]
+		return self.song.return_tracks[:8]
 
 
 	def _with_shift(self, button):
-		return ComboElement(button, modifiers=[self._shift_button])
+		return CompoundElement(button, modifiers=[self._shift_button])
 
 
 
-class PO10DeviceSelectorComponent(ControlSurfaceComponent):
+class PO10DeviceSelectorComponent(Component):
 
 
 	def __init__(self, script, device_component, prefix = '@d', *a, **k):
@@ -787,7 +741,7 @@ class PO10DeviceSelectorComponent(ControlSurfaceComponent):
 		self._watched_device = None
 		self._device_colors = DEVICE_COLORS
 		self._selected_colorshift = SELECTED_COLORSHIFT
-		self._device_listener.subject = self.song()
+		self._device_listener.subject = self.song
 		self._device_listener()
 
 
@@ -813,7 +767,7 @@ class PO10DeviceSelectorComponent(ControlSurfaceComponent):
 		self.update()
 
 
-	@subject_slot_group('value')
+	@listens_group('value')
 	def _on_button_value(self, value, sender):
 		if self.is_enabled():
 			if value:
@@ -828,7 +782,7 @@ class PO10DeviceSelectorComponent(ControlSurfaceComponent):
 			#debug('before view device:', preset)
 			if not preset is None and isinstance(preset, Live.Device.Device):
 				#debug('view device:', preset)
-				self.song().view.select_device(preset)
+				self.song.view.select_device(preset)
 				self._device_component.set_device(preset)
 			self.update()
 
@@ -839,7 +793,7 @@ class PO10DeviceSelectorComponent(ControlSurfaceComponent):
 		prefix = str(self._prefix)+':'
 		offset = self._offset
 		preset = None
-		for track in self.song().tracks:
+		for track in self.song.tracks:
 			for device in self.enumerate_track_device(track):
 				for index, entry in enumerate(self._device_registry):
 					key = str(prefix + str(index + 1 + offset))
@@ -847,7 +801,7 @@ class PO10DeviceSelectorComponent(ControlSurfaceComponent):
 						self._device_registry[index] = device
 					elif (device.name.startswith('*' +key+' ') or device.name == ('*' +key)) and device.can_have_chains and len(device.chains) and len(device.chains[0].devices):
 						self._device_registry[index] = device.chains[0].devices[0]
-		for return_track in self.song().return_tracks:
+		for return_track in self.song.return_tracks:
 			for device in self.enumerate_track_device(return_track):
 				for index, entry in enumerate(self._device_registry):
 					key = str(prefix + str(index + 1 + offset))
@@ -855,7 +809,7 @@ class PO10DeviceSelectorComponent(ControlSurfaceComponent):
 						self._device_registry[index] = device
 					elif (device.name.startswith('*' +key+' ') or device.name == ('*' +key))  and device.can_have_chains and len(device.chains) and len(device.chains[0].devices):
 						self._device_registry[index] = device.chains[0].devices[0]
-		for device in self.enumerate_track_device(self.song().master_track):
+		for device in self.enumerate_track_device(self.song.master_track):
 			for index, entry in enumerate(self._device_registry):
 				key = str(prefix + str(index + 1 + offset))
 				if device.name.startswith(key+' ') or device.name == key:
@@ -878,19 +832,19 @@ class PO10DeviceSelectorComponent(ControlSurfaceComponent):
 		return devices
 
 
-	@subject_slot('appointed_device')
+	@listens('appointed_device')
 	def _device_listener(self, *a, **k):
 		#debug('device_listener')
-		self._on_name_changed.subject = self.song().appointed_device
-		self._watched_device = self.song().appointed_device
+		self._on_name_changed.subject = self.song.appointed_device
+		self._watched_device = self.song.appointed_device
 		if self.is_enabled():
 			self.update()
 
 
-	@subject_slot('name')
+	@listens('name')
 	def _on_name_changed(self):
 		#debug('on name changed')
-		if self._watched_device == self.song().appointed_device:
+		if self._watched_device == self.song.appointed_device:
 			self.scan_all()
 
 
@@ -935,10 +889,10 @@ class ModDeviceSelector(PO10DeviceSelectorComponent):
 			if index < len(self._device_registry):
 				preset = self._device_registry[index]
 			if not preset is None and isinstance(preset, Live.Device.Device):
-				self.song().view.select_device(preset)
+				self.song.view.select_device(preset)
 				track = get_track(preset)
 				if track:
-					self.song().view.selected_track = track
+					self.song.view.selected_track = track
 				self._device_component.set_device(preset)
 			self.update()
 
@@ -949,59 +903,7 @@ class ModDeviceSelector(PO10DeviceSelectorComponent):
 
 
 
-class PO10M4LInterfaceComponent(ControlSurfaceComponent, ControlElementClient):
-	"""
-	Simplified API for interaction from M4L as a high priority layer
-	superposed on top of any functionality.
-	"""
-
-
-	def __init__(self, controls = None, component_guard = None, priority = 1, *a, **k):
-		super(PO10M4LInterfaceComponent, self).__init__(self, *a, **k)
-		self._priority = priority
-		self._controls = dict(map(lambda x: (x.name, x), controls))
-		self._grabbed_controls = []
-		self._component_guard = component_guard
-
-
-	def disconnect(self):
-		for control in self._grabbed_controls[:]:
-			self.release_control(control)
-		super(PO10M4LInterfaceComponent, self).disconnect()
-
-
-	def set_control_element(self, control, grabbed):
-		if hasattr(control, 'release_parameter'):
-			control.release_parameter()
-		control.reset()
-
-
-	def get_control_names(self):
-		return self._controls.keys()
-
-
-	def get_control(self, control_name):
-		return self._controls[control_name] if control_name in self._controls else None
-
-
-	def grab_control(self, control):
-		assert(control in self._controls.values())
-		with self._component_guard():
-			if control not in self._grabbed_controls:
-				control.resource.grab(self, priority=self._priority)
-				self._grabbed_controls.append(control)
-
-
-	def release_control(self, control):
-		assert(control in self._controls.values())
-		with self._component_guard():
-			if control in self._grabbed_controls:
-				self._grabbed_controls.remove(control)
-				control.resource.release(self)
-
-
-
-class HotKnobComponent(ControlSurfaceComponent):
+class HotKnobComponent(Component):
 
 
 	def __init__(self, *a, **k):
@@ -1012,7 +914,7 @@ class HotKnobComponent(ControlSurfaceComponent):
 		self._on_button_value.subject = button
 
 
-	@subject_slot('value')
+	@listens('value')
 	def _on_button_value(self, value):
 		if value:
 			pass
@@ -1030,10 +932,16 @@ class HotKnobComponent(ControlSurfaceComponent):
 
 
 
-class PO10(OptimizedControlSurface):
+class PO10(LividControlSurface):
 	__module__ = __name__
 	__doc__ = " Monomodular controller script for PO10 "
 
+	_sysex_id = 9
+	_model_name = 'PO10'
+	_host_name = 'PO10'
+	_version_check = 'b996'
+	monomodular = None
+	device_provider_class = ModDeviceProvider
 
 	def __init__(self, *a, **k):
 		super(PO10, self).__init__(*a, **k)
@@ -1055,11 +963,19 @@ class PO10(OptimizedControlSurface):
 		self.modhandler = None
 		self._main_modes = None
 		#with self.component_guard():
+		#	self._main_device = PO10DeviceComponent()
+		#	self._device = PO10DeviceComponent()
+		#	self._setup_monobridge()
+		#with self.component_guard():
 		#	self._setup_mod()
-		#self._on_device_changed.subject = self.song()
+		#self._on_device_changed.subject = self.song
 		#self.set_feedback_channels(range(14, 15))
 		#self._main_modes.selected_mode = 'MixMode'
 		self.schedule_message(1, self._open_log)
+
+
+	def notification_to_bridge(self, *a, **k):
+		pass
 
 
 	def _open_log(self):
@@ -1068,14 +984,10 @@ class PO10(OptimizedControlSurface):
 
 
 	def _initialize_hardware(self):
-		#self._main_modes.selected_mode = 'MixMode'
 		pass
 
 
 	def _check_connection(self):
-		#if not self._connected:
-		#	self._livid_settings.query_surface()
-		#	self.schedule_message(100, self._check_connection)
 		if self._main_modes:
 			self._main_modes.selected_mode = 'Main'
 
@@ -1083,68 +995,52 @@ class PO10(OptimizedControlSurface):
 	def port_settings_changed(self):
 		debug('port settings changed!')
 		self._connected = False
-		#self._main_modes.selected_mode = 'disabled'
 		self._check_connection()
 		super(PO10, self).port_settings_changed()
-		#for control in self.controls:
-		#	if isinstance(control, MonoButtonElement):
-		#		control.set_light('DefaultButton.On')
-		#	elif isinstance(control, CodecEncoderElement):
-		#		control.send_value(127, True)
 
 
 	def _initialize_functionality(self):
 		if not self._po10_linked_script is None:
-			if self.is_valid():
-				with self.component_guard():
-					self._setup_monobridge()
-					self._setup_controls()
-					self._define_sysex()
-					self._setup_session()
-					self._setup_main_device_control()
-					self._setup_device_control()
-					self._setup_main_device_selector()
-					self._setup_device_selector()
-					self._setup_kills()
-					self._setup_track_mutes()
-					#self._setup_translations()
-					self._setup_mod()
-					self._setup_modes()
-					self._setup_m4l_interface()
-				self._initialized = True
-				self._main_device_selector.select_device(DEFAULT_MASTER_DEVICE_INDEX)
-				self._device_selector.select_device(DEFAULT_DEVICE_INDEX)
-				self.schedule_message(3, self._check_connection)
-				self.schedule_message(10, self._select_hex_mod)
-			else:
-				debug('No PO10b script linked....aborting initialization')
+			with self._control_surface_injector:
+				self._setup_monobridge()
+				self._setup_controls()
+				self._define_sysex()
+				self._setup_session()
+				self._setup_main_device_control()
+				self._setup_device_control()
+				self._setup_main_device_selector()
+				self._setup_device_selector()
+				self._setup_kills()
+				self._setup_track_mutes()
+				#self._setup_translations()
+				self._setup_mod()
+				self._setup_modes()
+				#self._setup_m4l_interface()
+			self._initialized = True
+			self._main_device_selector.select_device(DEFAULT_MASTER_DEVICE_INDEX)
+			self._device_selector.select_device(DEFAULT_DEVICE_INDEX)
+			self.schedule_message(3, self._check_connection)
+			self.schedule_message(10, self._select_hex_mod)
+		else:
+			debug('No PO10b script linked....aborting initialization')
 
-
-	def is_valid(self):
-		#cur_date = time.strftime("%x").split('/')
-		#valid = int(cur_date[0]) < 9 and int(cur_date[1]) < 7 and int(cur_date[2]) < 16
-		#return valid
-		return True
-
-
-	def _setup_monobridge(self):
-		self._monobridge = MonoBridgeElement(self)
-		self._monobridge.name = 'MonoBridge'
 
 
 	def _with_shift(self, button):
-		return ComboElement(button, modifiers=[self._shift_button])
+		return CompoundElement(button, modifiers=[self._shift_button])
 
 
 	def _setup_controls(self):
 		is_momentary = True
-		self._grid = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, PO10_GRID[index], name = 'Grid_' + str(index), script = self, skin = self._skin, color_map = COLOR_MAP) for index in range(16)]
-		self._button = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, PO10_BUTTONS[index], name = 'Button_' + str(index), script = self, skin = self._skin, color_map = COLOR_MAP) for index in range(30)]
-		self._key = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, PO10_KEYS[index], name = 'Key_' + str(index), script = self, skin = self._skin, color_map = COLOR_MAP) for index in range(32)]
+		optimized = True
+		resource = PrioritizedResource
+		self._grid = [MonoButtonElement(is_momentary = is_momentary, msg_type = MIDI_NOTE_TYPE, channel = CHANNEL, identifier = PO10_GRID[index], name = 'Grid_' + str(index), script = self, skin = self._skin, color_map = COLOR_MAP, optimized_send_midi = optimized, resource_type = resource) for index in range(16)]
+		self._button = [MonoButtonElement(is_momentary = is_momentary, msg_type = MIDI_NOTE_TYPE, channel = CHANNEL, identifier = PO10_BUTTONS[index], name = 'Button_' + str(index), script = self, skin = self._skin, color_map = COLOR_MAP, optimized_send_midi = optimized, resource_type = resource) for index in range(30)]
+		self._key = [MonoButtonElement(is_momentary = is_momentary, msg_type = MIDI_NOTE_TYPE, channel = CHANNEL, identifier = PO10_KEYS[index], name = 'Key_' + str(index), script = self, skin = self._skin, color_map = COLOR_MAP, optimized_send_midi = optimized, resource_type = resource) for index in range(32)]
 		#self._po10_encoders = [CodecEncoderElement(MIDI_CC_TYPE, CHANNEL, PO10_ENCODERS[index], Live.MidiMap.MapMode.absolute, 'Encoder_' + str(index+13), PO10_ENCODERS[index], self) for index in range(5)]
 		#self._encoders = [CodecEncoderElement(MIDI_CC_TYPE, CHANNEL, PO10b_ENCODERS[index], Live.MidiMap.MapMode.absolute, 'Encoder_' + str(index), PO10_ENCODERS[index], self) for index in range(13)]
 		#self._encoder_button = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, PO10_ENCODER_BUTTONS[index], name = 'Encoder_Button_' + str(index), script = self, skin = self._skin) for index in range(18)]
-		self._encoder_feedback = [CodecEncoderElement(MIDI_CC_TYPE, CHANNEL, PO10_ENCODERS[index], Live.MidiMap.MapMode.absolute, 'Encoder_' + str(index), PO10_ENCODERS[index], self) for index in range(5)]
+		self._encoder_feedback = [CodecEncoderElement(msg_type = MIDI_CC_TYPE, channel = CHANNEL, identifier = PO10_ENCODERS[index], name = 'Encoder_' + str(index), num = PO10_ENCODERS[index], script = self) for index in range(5)]
 		self._encoder = self._po10_linked_script._po10b_encoders
 		self._encoder_button = self._po10_linked_script._po10b_encoder_buttons
 
@@ -1171,18 +1067,27 @@ class PO10(OptimizedControlSurface):
 
 
 	def _setup_session(self):
-		self._session = SessionComponent(name = 'Session_Component', num_tracks = 20, num_scenes = 1)
+		#debug('_setup_session:', register_component)
+		self._session_ring = SessionRingComponent(num_tracks = 20, num_scenes = 1)
+		self._session_ring.set_enabled(True)
+
+		self._session_navigation = SessionNavigationComponent(session_ring = self._session_ring)
+		self._session_navigation.unshift_layer = AddLayerMode(self._session_navigation, Layer(priority = 6, page_down_button = self._button[29]))
+		self._session_navigation.shift_layer = AddLayerMode(self._session_navigation, Layer(priority = 6, page_up_button = self._button[29]))
+		self._session_navigation.set_enabled(True)
+
+		self._session = SessionComponent(name = 'Session_Component', session_ring = self._session_ring, auto_name = True)
 		self._session._scenes[0].layer = Layer(priority = 6, launch_button = self._button[28])
-		self._session.unshift_layer = AddLayerMode(self._session, Layer(priority = 6, scene_bank_down_button = self._button[29]))
-		self._session.shift_layer = AddLayerMode(self._session, Layer(priority = 6, scene_bank_up_button = self._button[29]))
-		self.set_highlighting_session_component(self._session)
-		self._session.set_show_highlight(True)
+
+		#self.set_highlighting_session_component(self._session)
+		#self._session.set_show_highlight(True)
 		self._session.set_enabled(False)
-		self._session._link()
+		#self._session._link()
 
 
 	def _setup_main_device_control(self):
-		self._main_device = PO10DeviceComponent()
+		#debug('_setup_main_device_control:', register_component)
+		self._main_device = PO10DeviceComponent() #parent = self)
 		self._main_device.layer = Layer(priority = 6, parameter_controls = self._main_encoder_matrix,
 											parameter_buttons = self._main_encoder_button_matrix)
 		self._main_device.set_enabled(True)
@@ -1233,7 +1138,7 @@ class PO10(OptimizedControlSurface):
 
 
 	def _scan_for_track_mutes(self):
-		for track in self.song().tracks:
+		for track in self.song.tracks:
 			debug('looking for mute on track:', track.name)
 			if track and hasattr(track, 'name') and track.name.startswith('AllBeats'):
 				debug('found AllBeats mute!')
@@ -1241,7 +1146,7 @@ class PO10(OptimizedControlSurface):
 				self._AllBeats_channel_strip.set_mute_button(self._button[16])
 				self._AllBeats_channel_strip.set_enabled(True)
 				break
-		for track in self.song().tracks:
+		for track in self.song.tracks:
 			debug('looking for mute on track:', track.name)
 			if track and hasattr(track, 'name') and track.name.startswith('BD'):
 				debug('found BD mute!')
@@ -1298,49 +1203,21 @@ class PO10(OptimizedControlSurface):
 		self._modswitcher = ModesComponent(name = 'ModSwitcher')  # is_enabled = False)
 		self._modswitcher.add_mode('mod', [self.modhandler])
 		self._modswitcher.add_mode('modplus', [self.modhandler, self.modhandler.partial_layer])
-		#self._modswitcher.add_mode('instrument', [self._instrument, self._instrument.shift_button_layer, main_buttons, main_faders, self._mixer.main_knobs_layer, self._device.main_layer, self._device_navigator.main_layer]) #self._instrument.shift_button_layer, self._optional_translations])
 		self._modswitcher.selected_mode = 'mod'
 		self._modswitcher.set_enabled(True)
 
 		self._main_modes = ModesComponent(name = 'MainModes')
 		self._main_modes.add_mode('disabled', None)
-		self._main_modes.add_mode('Main', [self._session, self._session.unshift_layer])
-		self._main_modes.add_mode('Shifted', [self._session, self._session.shift_layer], behaviour = CancellableBehaviourWithRelease())
+		self._main_modes.add_mode('Main', [self._session, self._session_navigation, self._session_navigation.unshift_layer])
+		self._main_modes.add_mode('Shifted', [self._session, self._session_navigation, self._session_navigation.shift_layer], behaviour = CancellableBehaviourWithRelease())
 		self._main_modes.layer = Layer(priority = 6, Shifted_button = self._shift_button)
 		self._main_modes.selected_mode = 'disabled'
 
-		#self._main_modes = ModesComponent(name = 'MainModes')
-		#self._main_modes.add_mode('disabled', None)
-		#self._main_modes.add_mode('MixMode', [self._instrument, self._instrument.shift_button_layer, main_faders, self._mixer.main_knobs_layer, self._device.main_layer, self._device_navigator.main_layer,])	 # self._session.dial_nav_layer, self._mixer.dial_nav_layer, ])
-		#self._main_modes.add_mode('ModSwitcher', [main_faders, main_dials, self._mixer.main_knobs_layer, self._session.select_dial_layer, self._mixer.select_dial_layer, self._device_navigator.select_dial_layer, self.encoder_navigation_on, self._modswitcher, DelayMode(self._update_modswitcher)], behaviour = DefaultedBehaviour(default_mode = 'MixMode', color = 'ModeButtons.ModSwitcher', off_color = 'ModeButtons.ModSwitcherDisabled'))
-		#self._main_modes.add_mode('MainMode', [self.modhandler.partial_layer, DelayMode(self._update_modswitcher, delay = .1)], behaviour = ColoredCancellableBehaviourWithRelease(color = 'ModeButtons.ModSwitcher', off_color = 'ModeButtons.ModSwitcherDisabled')),
-		#self._main_modes.add_mode('ModMode', [self.modhandler, DelayMode(self._update_modswitcher, delay = .1)], behaviour = ColoredCancellableBehaviourWithRelease(color = 'ModeButtons.ModSwitcher', off_color = 'ModeButtons.ModSwitcherDisabled'))
-		#self._main_modes.add_mode('Translations', [main_faders, main_dials, self._mixer.main_knobs_layer, self._translations, DelayMode(self._translations.selector_layer, delay = .1)], behaviour = DefaultedBehaviour(default_mode = 'MixMode', color = 'ModeButtons.Translations', off_color = 'ModeButtons.TranslationsDisabled'))
-		#self._main_modes.add_mode('DeviceSelector', [DelayMode(self._device_selector, delay = .1), DelayMode(self.modhandler.lock_layer, delay = .1), DelayMode(self._device_selector.assign_layer, delay = .2), main_buttons, main_dials, main_faders, self._mixer.main_knobs_layer, self._device, self._device.main_layer, self._device_navigator], behaviour = ColoredCancellableBehaviourWithRelease(color = 'ModeButtons.DeviceSelector', off_color = 'ModeButtons.DeviceSelectorDisabled'))
-		#self._main_modes.layer = Layer(priority = 4, ModMode_button = self._button[0], MainMode_button = self._button[1]) #,
-
-
-	def _setup_m4l_interface(self):
-		self._m4l_interface = MonoM4LInterfaceComponent(controls=self.controls, component_guard=self.component_guard, priority = 10)
-		self._m4l_interface.name = "M4LInterface"
-		self.get_control_names = self._m4l_interface.get_control_names
-		self.get_control = self._m4l_interface.get_control
-		self.grab_control = self._m4l_interface.grab_control
-		self.release_control = self._m4l_interface.release_control
 
 
 	def update_display(self):
 		super(PO10, self).update_display()
-		self._timer = (self._timer + 1) % 256
 		self.modhandler and self.modhandler.send_ring_leds()
-		self.flash()
-
-
-	def flash(self):
-		if(self.flash_status > 0):
-			for control in self.controls:
-				if isinstance(control, MonoButtonElement):
-					control.flash(self._timer)
 
 
 	def _update_modswitcher(self):
@@ -1354,67 +1231,10 @@ class PO10(OptimizedControlSurface):
 				debug('switching to mod....')
 
 
-	@subject_slot('appointed_device')
+	@listens('appointed_device')
 	def _on_device_changed(self):
 		debug('appointed device changed, script')
 		#self._main_modes.selected_mode is 'ModSwitcher' and self.schedule_message(2, self._update_modswitcher)
-
-
-	def generate_strip_string(self, display_string):
-		NUM_CHARS_PER_DISPLAY_STRIP = 12
-		if (not display_string):
-			return (' ' * NUM_CHARS_PER_DISPLAY_STRIP)
-		if ((len(display_string.strip()) > (NUM_CHARS_PER_DISPLAY_STRIP - 1)) and (display_string.endswith('dB') and (display_string.find('.') != -1))):
-			display_string = display_string[:-2]
-		if (len(display_string) > (NUM_CHARS_PER_DISPLAY_STRIP - 1)):
-			for um in [' ',
-			 'i',
-			 'o',
-			 'u',
-			 'e',
-			 'a']:
-				while ((len(display_string) > (NUM_CHARS_PER_DISPLAY_STRIP - 1)) and (display_string.rfind(um, 1) != -1)):
-					um_pos = display_string.rfind(um, 1)
-					display_string = (display_string[:um_pos] + display_string[(um_pos + 1):])
-		else:
-			display_string = display_string.center((NUM_CHARS_PER_DISPLAY_STRIP - 1))
-		ret = u''
-		for i in range((NUM_CHARS_PER_DISPLAY_STRIP - 1)):
-			if ((ord(display_string[i]) > 127) or (ord(display_string[i]) < 0)):
-				ret += ' '
-			else:
-				ret += display_string[i]
-
-		ret += ' '
-		ret = ret.replace(' ', '_')
-		assert (len(ret) == NUM_CHARS_PER_DISPLAY_STRIP)
-		return ret
-
-
-	def notification_to_bridge(self, name, value, sender):
-		if(isinstance(sender, (MonoEncoderElement, CodecEncoderElement))):
-			pn = str(self.generate_strip_string(name))
-			pv = str(self.generate_strip_string(value))
-			self._monobridge._send(sender.name, 'lcd_name', pn)
-			self._monobridge._send(sender.name, 'lcd_value', pv)
-
-
-	def touched(self):
-		if self._touched is 0:
-			self._monobridge._send('touch', 'on')
-			self.schedule_message(2, self.check_touch)
-		self._touched +=1
-
-
-	def check_touch(self):
-		if self._touched > 5:
-			self._touched = 5
-		elif self._touched > 0:
-			self._touched -= 1
-		if self._touched is 0:
-			self._monobridge._send('touch', 'off')
-		else:
-			self.schedule_message(2, self.check_touch)
 
 
 	def handle_sysex(self, midi_bytes):
@@ -1459,7 +1279,8 @@ class PO10(OptimizedControlSurface):
 			self._po10_linked_script.touched = self.touched
 			self._po10_linked_script.check_touch = self.check_touch
 			self._po10_linked_script.notification_to_bridge = self.notification_to_bridge
-			self._initialize_functionality()
+			with self.component_guard():
+				self._initialize_functionality()
 
 
 
@@ -1484,10 +1305,16 @@ class PO10(OptimizedControlSurface):
 
 
 
-class PO10b(OptimizedControlSurface):
+class PO10b(LividControlSurface):
 	__module__ = __name__
 	__doc__ = " Monomodular controller script for PO10 "
 
+	_sysex_id = 9
+	_model_name = 'PO10'
+	_host_name = 'PO10'
+	_version_check = 'b996'
+	monomodular = None
+	device_provider_class = ModDeviceProvider
 
 	def __init__(self, c_instance, *a, **k):
 		super(PO10b, self).__init__(c_instance, *a, **k)
@@ -1575,7 +1402,7 @@ class PO10ModHandler(ModHandler):
 					'po10_key': {'obj':  Grid('po10_key', 16, 2), 'method': self._receive_po10_key}}
 		super(PO10ModHandler, self).__init__(addresses = addresses, *a, **k)
 		self._color_type = 'Monochrome'
-		self.nav_box = self.register_component(NavigationBox(self, 16, 16, 4, 4, self.set_offset))
+		self.nav_box = NavigationBox(self, 16, 16, 4, 4, self.set_offset)
 
 
 	def _receive_po10_grid(self, x, y, value = -1, *a, **k):
@@ -1662,14 +1489,14 @@ class PO10ModHandler(ModHandler):
 
 
 
-	@subject_slot('value')
+	@listens('value')
 	def _po10_keys_value(self, value, x, y, *a, **k):
 		#debug('_po10_keys_value:', x, y, value)
 		if self._active_mod:
 			self._active_mod.send('po10_key', x, y, value)
 
 
-	@subject_slot('value')
+	@listens('value')
 	def _po10_grid_value(self, value, x, y, *a, **k):
 		#debug('_po10_grid_value:', x, y, value)
 		if self._active_mod:
@@ -1679,14 +1506,14 @@ class PO10ModHandler(ModHandler):
 				self._active_mod.send('po10_grid', x, y, value)
 
 
-	@subject_slot('value')
+	@listens('value')
 	def _po10_encoder_grid_value(self, value, x, y, *a, **k):
 		#debug('_po10_encoder_grid_value:', x, y, value)
 		if self._active_mod:
 			self._active_mod.send('po10_encoder_grid', x, y, value)
 
 
-	@subject_slot('value')
+	@listens('value')
 	def _po10_encoder_button_grid_value(self, value, x, y, *a, **k):
 		#debug('_po10_encoder_button_grid_value:', x, y, value)
 		if self._active_mod:
@@ -1694,7 +1521,7 @@ class PO10ModHandler(ModHandler):
 
 
 
-	@subject_slot('appointed_device')
+	@listens('device')
 	def _on_device_changed(self):
 		#super(PO10ModHandler, self)._on_device_changed()
 		#self._script._on_device_changed()
@@ -1704,7 +1531,7 @@ class PO10ModHandler(ModHandler):
 
 	def select_appointed_device(self, *a):
 		debug('select_appointed_device' + str(a))
-		track = self.song().view.selected_track
+		track = self.song.view.selected_track
 		device_to_select = track.view.selected_device
 		if device_to_select == None and len(track.devices) > 0:
 			device_to_select = track.devices[0]
