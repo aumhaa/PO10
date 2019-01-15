@@ -3,15 +3,15 @@
 //aumhaa@gmail.com --- http://www.aumhaa.com
 
 
-/*This patch is the evolution of the binary mod;  The majority of the functionality for the entire patch 
-can be modified in this js or the accompanying poly~ object, "steppr_wheel", without ever opening 
+/*This patch is the evolution of the binary mod;  The majority of the functionality for the entire patch
+can be modified in this js or the accompanying poly~ object, "steppr_wheel", without ever opening
 the actual containing patch in the m4l editor (this was crucial for speeding up the development process).
-Because of this, the functionality of the patch can be radically altered merely by modifying the 
-poly~ or adding some lines of code in to this js.  As an example, the poly~ used as the base for 
-this patch is only a slightly modified version of the "binary" mod (from Monomodular), and the 
+Because of this, the functionality of the patch can be radically altered merely by modifying the
+poly~ or adding some lines of code in to this js.  As an example, the poly~ used as the base for
+this patch is only a slightly modified version of the "binary" mod (from Monomodular), and the
 majority of processes in this script are maintained between both versions.*/
 
-/*It should be noted that many of the processes used in "binary" are still available yet unused 
+/*It should be noted that many of the processes used in "binary" are still available yet unused
 in this script, offering some excellent prospects for the future development of this mod.*/
 
 autowatch = 1;
@@ -20,10 +20,11 @@ outlets = 4;
 inlets = 5;
 
 aumhaa = require('_base');
-aumhaa.init_deprecated_prototypes(this);
+//aumhaa.init_deprecated_prototypes(this);
+var FORCELOAD = true;
+var DEBUG = true;
+aumhaa.init(this);
 
-var FORCELOAD = false;
-var DEBUG = false;
 var NEW_DEBUG = false;
 var DEBUG_LCD = false;
 var DEBUG_PTR = false;
@@ -32,36 +33,42 @@ var DEBUG_BLINK = false;
 var DEBUG_REC = false;
 var DEBUG_LOCK = false;
 var DEBUGANYTHING = false;
+var DEBUGSETTER = false;
 var SHOW_POLYSELECTOR = false;
 var SHOW_STORAGE = false;
 
-var debug = (DEBUG&&Debug) ? Debug : function(){};
+
+var newdebug = (NEW_DEBUG&&Debug) ? Debug : function(){};
 var debuglcd = (DEBUG_LCD&&Debug) ? Debug : function(){};
 var debugptr = (DEBUG_PTR&&Debug) ? Debug :function(){};
 var debugstep = (DEBUG_STEP&&Debug) ? Debug : function(){};
 var debugblink = (DEBUG_BLINK&&Debug) ? Debug : function(){};
 var debugrec = (DEBUG_REC&&Debug) ? Debug : function(){};
 var debuganything = (DEBUGANYTHING&&Debug) ? Debug : function(){};
-
+var debugSETTER = (DEBUGSETTER&&Debug) ? Debug : function(){};
 var forceload = (FORCELOAD&&Forceload) ? Forceload : function(){};
 
 var finder;
 var mod;
 var mod_finder;
+var found_mod;
+
+var Mod = ModComponent.bind(script);
+var ModProxy = ModProxyComponent.bind(script);
 
 var unique = jsarguments[1];
 
-//this array contains the scripting names of objects in the top level patcher.	To include an new object to be addressed 
+//this array contains the scripting names of objects in the top level patcher.	To include an new object to be addressed
 //in this script, it's only necessary to add its name to this array.  It can then be addressed as a direct variable
-var Vars = ['poly', 'pipe', 'selected_filter', 'step', 'storepattr', 'storage', 'preset_selector', 'padgui', 'padmodegui', 'keygui', 'keymodegui', 'repeatgui', 
+var Vars = ['poly', 'pipe', 'selected_filter', 'step', 'storepattr', 'storage', 'preset_selector', 'padgui', 'padmodegui', 'keygui', 'keymodegui', 'repeatgui',
 			'rotleftgui', 'rotrightgui', 'notevaluesgui', 'notetypegui', 'stepmodegui', 'keymodeadv', 'Groove', 'Random', 'Channel', 'Mode', 'PolyOffset', 'BaseTime',
 			'timeupgui', 'timedngui', 'pitchupgui', 'pitchdngui', 'transposegui', 'playgui', 'recgui', 'directiongui', 'lockgui','lockgui', 'Speed',
 			'Speed1', 'Speed2', 'Speed3', 'Speed4', 'Speed5', 'Speed6', 'Speed7', 'Speed8', 'Speed9', 'Speed10', 'Speed11', 'Speed12', 'Speed13', 'Speed14', 'Speed15', 'Speed16',
-			'rotgate', 'transport_change', 'midiout'];
+			'rotgate', 'transport_change', 'midiout', 'FreeSpeed', 'quantgui'];
 
-//this array contains the scripting names of pattr-linked objects in each of the polys. To include an new object to be addressed 
+//this array contains the scripting names of pattr-linked objects in each of the polys. To include an new object to be addressed
 //in the poly, it's only necessary to add its name to this array.  It can then be addressed as part[poly number].obj[its scripting name]
-var Objs = {'pattern':{'Name':'pattern', 'Type':'list', 'pattr':'pattern'}, 
+var Objs = {'pattern':{'Name':'pattern', 'Type':'list', 'pattr':'pattern'},
 			'duration':{'Name':'duration', 'Type':'list', 'pattr':'duration'},
 			'velocity':{'Name':'velocity', 'Type':'list', 'pattr':'velocity'},
 			'note':{'Name':'note', 'Type':'list', 'pattr':'note'},
@@ -74,17 +81,17 @@ var Objs = {'pattern':{'Name':'pattern', 'Type':'list', 'pattr':'pattern'},
 			'channel':{'Name':'channel', 'Type':'int', 'pattr':'hidden'},
 			'direction':{'Name':'direction', 'Type':'int', 'pattr':'directionpattr'},
 			'nudge':{'Name':'nudge', 'Type':'int', 'pattr':'nudgepattr'},
-			'noteoffset':{'Name':'noteoffset', 'Type':'int', 'pattr':'hidden'}, 
+			'noteoffset':{'Name':'noteoffset', 'Type':'int', 'pattr':'hidden'},
 			'random':{'Name':'random', 'Type':'float', 'pattr':'randompattr'},
 			'polyoffset':{'Name':'polyoffset', 'Type':'int', 'pattr':'polyoffsetpattr'},
 			'repeatenable':{'Name':'repeatenable', 'Type':'int', 'pattr':'object'},
 			'polyplay':{'Name':'polyplay', 'Type':'int', 'pattr':'object'},
-			'notevalues':{'Name':'notevalues', 'Type':'int', 'pattr':'notevaluepattr'}, 
+			'notevalues':{'Name':'notevalues', 'Type':'int', 'pattr':'notevaluepattr'},
 			'notetype':{'Name':'notetype', 'Type':'int', 'pattr':'notetypepattr'},
 			'quantize':{'Name':'quantize', 'Type':'int', 'pattr':'hidden'},
 			'active':{'Name':'active', 'Type':'int', 'pattr':'active'},
 			'offset':{'Name':'offset', 'Type':'int', 'pattr':'hidden'},
-			'addnote':{'Name':'addnote', 'Type':'int', 'pattr':'object'}, 
+			'addnote':{'Name':'addnote', 'Type':'int', 'pattr':'object'},
 			'patterncoll':{'Name':'patterncoll', 'Type':'list', 'pattr':'object'},
 			'last_trigger':{'Name':'last_trigger', 'Type':'bang', 'pattr':'object'},
 			'clutch':{'Name':'clutch', 'Type':'int', 'pattr':'object'},
@@ -95,6 +102,7 @@ var Objs = {'pattern':{'Name':'pattern', 'Type':'list', 'pattr':'pattern'},
 			'timedivisor':{'Name':'timedivisor', 'Type':'int', 'pattr':'timedivisorpattr'},
 			'nexttime':{'Name':'nexttime', 'Type':'set', 'pattr':'object'},
 			'behavior_enable':{'Name':'behavior_enable', 'Type':'int', 'pattr':'hidden'},
+			'freespeedpattr':{'Name':'freespeedpattr', 'Type':'float', 'pattr':'freespeedpattr'}
 			};
 
 /*			'phasor':{'Name':'phasor', 'Type':'float', 'pattr':'object'},
@@ -104,19 +112,19 @@ var Objs = {'pattern':{'Name':'pattern', 'Type':'list', 'pattr':'pattern'},
 
 var HEX_SPEED_1 = ['ModDevice_Speed1', 'ModDevice_Speed2', 'ModDevice_Speed3', 'ModDevice_Speed4', 'ModDevice_Speed5', 'ModDevice_Speed6', 'ModDevice_Speed7', 'ModDevice_Speed8', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3']
 var HEX_SPEED_2 = ['ModDevice_Speed9', 'ModDevice_Speed10', 'ModDevice_Speed11', 'ModDevice_Speed12', 'ModDevice_Speed13', 'ModDevice_Speed14', 'ModDevice_Speed15', 'ModDevice_Speed16', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3']
-var HEX_BANKS = {'InstrumentGroupDevice':[['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'Macro 5', 'Macro 6', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2], 
-			'DrumGroupDevice':[['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'Macro 5', 'Macro 6', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2], 
-			'MidiEffectGroupDevice':[['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'Macro 5', 'Macro 6', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2], 
-			'Other':[['None', 'None', 'None', 'None', 'None', 'None', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['None', 'None', 'None', 'None', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'Operator':[['Osc-A Level', 'Osc-B Level', 'Osc-C Level', 'Osc-D Level', 'Transpose', 'Filter Freq', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime','Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Osc-A Level', 'Osc-B Level', 'Osc-C Level', 'Osc-D Level', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2], 
-			'UltraAnalog':[['AEG1 Attack', 'AEG1 Decay', 'AEG1 Sustain', 'AEG1 Rel', 'OSC1 Semi', 'F1 Freq', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['AEG1 Attack', 'AEG1 Decay', 'AEG1 Sustain', 'AEG1 Rel', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2], 
-			'OriginalSimpler':[['Ve Attack', 'Ve Decay', 'Ve Sustain', 'Ve Release', 'Transpose', 'Filter Freq', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Ve Attack', 'Ve Decay', 'Ve Sustain', 'Ve Release', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2], 
-			'MultiSampler':[['Ve Attack', 'Ve Decay', 'Ve Sustain', 'Ve Release', 'Transpose', 'Filter Freq', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Ve Attack', 'Ve Decay', 'Ve Sustain', 'Ve Release', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2], 
-			'LoungeLizard':[['M Force', 'F Release', 'F Tone Decay', 'F Tone Vol', 'Semitone', 'P Distance', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['M Force', 'F Release', 'F Tone Decay', 'F Tone Vol', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2], 
-			'StringStudio':[['E Pos', 'Exc ForceMassProt', 'Exc FricStiff', 'Exc Velocity', 'Semitone', 'Filter Freq', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['E Pos', 'Exc ForceMassProt', 'Exc FricStiff', 'Exc Velocity', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2], 
-			'Collision':[['Noise Attack', 'Noise Decay', 'Noise Sustain', 'Noise Release', 'Res 1 Tune', 'Res 1 Brightness', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Noise Attack', 'Noise Decay', 'Noise Sustain', 'Noise Release', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2], 
-			'InstrumentImpulse':[['1 Start', '1 Envelope Decay', '1 Stretch Factor', 'Global Time', 'Global Transpose', '1 Filter Freq', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime','Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['1 Start', '1 Envelope Decay', '1 Stretch Factor', 'Global Time', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2], 
-			'NoDevice':[['None', 'None', 'None', 'None', 'None', 'None', 'None', 'None', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTimev','Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['None', 'None', 'None', 'None', 'None', 'None', 'None', 'None', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2]}
+var HEX_BANKS = {'InstrumentGroupDevice':[['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'Macro 5', 'ModDevice_FreeSpeed', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'DrumGroupDevice':[['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'Macro 5', 'ModDevice_FreeSpeed', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'MidiEffectGroupDevice':[['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'Macro 5', 'ModDevice_FreeSpeed', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'Other':[['None', 'None', 'None', 'None', 'None', 'ModDevice_FreeSpeed', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['None', 'None', 'None', 'None', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'Operator':[['Osc-A Level', 'Osc-B Level', 'Osc-C Level', 'Osc-D Level', 'Transpose', 'ModDevice_FreeSpeed', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime','Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Osc-A Level', 'Osc-B Level', 'Osc-C Level', 'Osc-D Level', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'UltraAnalog':[['AEG1 Attack', 'AEG1 Decay', 'AEG1 Sustain', 'AEG1 Rel', 'OSC1 Semi', 'ModDevice_FreeSpeed', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['AEG1 Attack', 'AEG1 Decay', 'AEG1 Sustain', 'AEG1 Rel', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'OriginalSimpler':[['Ve Attack', 'Ve Decay', 'Ve Sustain', 'Ve Release', 'Transpose', 'ModDevice_FreeSpeed', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Ve Attack', 'Ve Decay', 'Ve Sustain', 'Ve Release', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'MultiSampler':[['Ve Attack', 'Ve Decay', 'Ve Sustain', 'Ve Release', 'Transpose', 'ModDevice_FreeSpeed', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Ve Attack', 'Ve Decay', 'Ve Sustain', 'Ve Release', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'LoungeLizard':[['M Force', 'F Release', 'F Tone Decay', 'F Tone Vol', 'Semitone', 'ModDevice_FreeSpeed', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['M Force', 'F Release', 'F Tone Decay', 'F Tone Vol', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'StringStudio':[['E Pos', 'Exc ForceMassProt', 'Exc FricStiff', 'Exc Velocity', 'Semitone', 'ModDevice_FreeSpeed', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['E Pos', 'Exc ForceMassProt', 'Exc FricStiff', 'Exc Velocity', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'Collision':[['Noise Attack', 'Noise Decay', 'Noise Sustain', 'Noise Release', 'Res 1 Tune', 'ModDevice_FreeSpeed', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Noise Attack', 'Noise Decay', 'Noise Sustain', 'Noise Release', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'InstrumentImpulse':[['1 Start', '1 Envelope Decay', '1 Stretch Factor', 'Global Time', 'Global Transpose', 'ModDevice_FreeSpeed', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime','Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['1 Start', '1 Envelope Decay', '1 Stretch Factor', 'Global Time', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'NoDevice':[['None', 'None', 'None', 'None', 'None', 'None', 'None', 'None', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime','Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['None', 'None', 'None', 'None', 'None', 'None', 'None', 'None', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2]}
 
 
 var Modes=[4, 2, 3, 5, 1];
@@ -141,17 +149,17 @@ var TIMES = {'1':0, '2':1, '4':2, '8':3, '16':4, '32':5, '64':6, '128':7};
 var ACCENTS = [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4];
 var ACCENT_VALS = [63, 87, 111, 127];
 var TRANS = {0:[[1, 1], [1, 2], [1, 4], [1, 8], [1, 16], [1, 32], [1, 64], [1, 128]],
-				1:[[3, 2], [3, 4], [3, 8], [3, 16], [3, 32], [3, 64], [3, 128], [1, 128]], 
+				1:[[3, 2], [3, 4], [3, 8], [3, 16], [3, 32], [3, 64], [3, 128], [1, 128]],
 				2:[[2, 3], [1, 3], [1, 6], [1, 12], [1, 24], [1, 48], [1, 96], [1, 128]]};
 var ENC_COLORS = [5, 5, 127, 127, 6, 1, 2, 2];
 var MODE_COLORS = [2, 5, 1, 3, 6, 4, 7, 2];
 
-/*Naming the js instance as script allows us to create scoped variables 
+/*Naming the js instance as script allows us to create scoped variables
 (properties of js.this) without specifically declaring them with var
-during the course of the session. This allows dynamic creation of 
+during the course of the session. This allows dynamic creation of
 objects without worrying about declaring them beforehand as globals
-presumably gc() should be able to do its job when the patch closes, or 
-if the variables are redclared.	 I'd love to know if this works the 
+presumably gc() should be able to do its job when the patch closes, or
+if the variables are redclared.	 I'd love to know if this works the
 way I think it does.*/
 
 var script = this;
@@ -162,10 +170,18 @@ var part =[];
 //var live_set;
 //var song_tempo = 120;
 
+var KEYMODES = ['mute', 'length', 'behaviour', 'single preset', 'global preset', 'polyrec', 'polyplay', 'accent'];
+var PADMODES = ['select', 'add', 'mute', 'preset', 'global', 'freewheel', 'play'];
+var STEPMODES = ['active', 'velocity', 'duration', 'rulebends', 'pitch'];
+var GRIDMODES = ['hex', 'tr256', 'polygome', 'cafe', 'boinngg', 'none', 'none', 'behaviour'];
+var CODECMODES = ['velocity', 'duration', 'behaviour', 'pitch'];
+
 var Alive=0;
 var step_mode = 0;
 var pad_mode = 0;
 var key_mode = 0;
+var grid_mode = 0;
+var codec_mode = 0;
 var solo_mode = 0;
 var last_mode = 1;
 var last_key_mode = 0;
@@ -202,7 +218,6 @@ var padmodeenables = [0, 1, 2, 3, 4, 5];
 
 //new props
 var sel_vel = 0;
-var grid_mode = 0;
 var altVal = 0;
 var ColNOTE = 1;
 var RowNOTE = 2;
@@ -229,19 +244,19 @@ var current_rule = 0;
 /////////////////////////////////////////*/
 
 
-/*	VERY IMPORTANT!! : This code utilizes a naming convention for private functions:  any function 
-preceeded by an underscore is considered private, but will have a public function reference	 
-assigned to it AFTER the script has received an initiallization call from mod.js.  That means that any 
-function that shouldn't be accessed before initialization can be created as a private function without 
-the need to use an internal testing routine to find out whether the script has init()ed.  
+/*	VERY IMPORTANT!! : This code utilizes a naming convention for private functions:  any function
+preceeded by an underscore is considered private, but will have a public function reference
+assigned to it AFTER the script has received an initiallization call from mod.js.  That means that any
+function that shouldn't be accessed before initialization can be created as a private function without
+the need to use an internal testing routine to find out whether the script has init()ed.
 
 Example:
 
-If we create _private_function(), and before init a call from max comes in to private_function(), that call 
-will be funneled to anything().	 After init(), however, all calls to private_function() will be forwarded to 
+If we create _private_function(), and before init a call from max comes in to private_function(), that call
+will be funneled to anything().	 After init(), however, all calls to private_function() will be forwarded to
 _private_function().
 
-Note:  It is best to only address these private functions by their actual names in the script, since calling aliased 
+Note:  It is best to only address these private functions by their actual names in the script, since calling aliased
 names will not be routed to anything().*/
 
 var Mod = ModComponent.bind(script);
@@ -249,18 +264,11 @@ var Mod = ModComponent.bind(script);
 function init()
 {
 	debug('INIT_______________________________');
-	if(!Alive)
-	{
-		debug('making new mod');
-		mod = new Mod(script, 'hex', unique, false);
-		//mod.debug = debug;
-		mod_finder = new LiveAPI(mod_callback, 'this_device');
-		mod.assign_api(mod_finder);
-	}
-	else
-	{
-		debug('mod already exists');
-	}
+	mod = new ModProxy(script, ['Send', 'SendDirect', 'restart']);
+	found_mod = new Mod(script, 'hex', unique, false);
+	//found_mod.debug = debug;
+	mod_finder = new LiveAPI(mod_callback, 'this_device');
+	found_mod.assign_api(mod_finder);
 }
 
 function mod_callback(args)
@@ -289,7 +297,7 @@ function initialize(val)
 {
 	if(val>0)
 	{
-		debug('hex init\n');
+		debug('hex init');
 		setup_translations();
 		setup_colors();
 		for(var i in Vars)
@@ -306,8 +314,8 @@ function initialize(val)
 			storage.message('priorty', 'poly.'+(poly_num+1), 'tickspattr', 10);
 			storage.message('priorty', 'poly.'+(poly_num+1),  'notetypepattr', 11);
 			storage.message('priorty', 'poly.'+(poly_num+1),  'notevaluepattr', 12);
-			part[i] = {'n': 'part', 'num':i, 'nudge':0, 'offset':0, 'channel':0, 'len':16, 'start':0, 
-						'jitter':0, 'active':1, 'swing':.5, 'lock':1, 'ticks':480, 'notevalues':3, 'notetype':0, 
+			part[i] = {'n': 'part', 'num':i, 'nudge':0, 'offset':0, 'channel':0, 'len':16, 'start':0,
+						'jitter':0, 'active':1, 'swing':.5, 'lock':1, 'ticks':480, 'notevalues':3, 'notetype':0,
 						'pushed':0, 'direction':0, 'noteoffset':i, 'root':i, 'octave':0, 'add':0, 'quantize':1, 'repeat':6, 'clutch':1,
 						'random':0, 'note':i, 'steps':11, 'mode':0, 'polyenable':0, 'polyoffset':36, 'mode':0,
 						'hold':0, 'held':[], 'triggered':[], 'recdirty':0, 'timedivisor':16, 'basetime':1, 'behavior_enable':1};//'speed':480,'notevalue':'4n'
@@ -326,7 +334,7 @@ function initialize(val)
 			part[i].obj.get = [];
 			for(var j in Objs)
 			{
-				//debug(Objs[j].Name, '\n');
+				//debug(Objs[j].Name);
 				part[i].obj[Objs[j].Name] = this.patcher.getnamed('poly').subpatcher(poly_num).getnamed(Objs[j].Name);
 				part[i].obj.set[Objs[j].Name] = make_obj_setter(part[i], Objs[j]);
 				part[i].obj.get[Objs[j].Name] = make_obj_getter(part[i], Objs[j]);
@@ -338,7 +346,6 @@ function initialize(val)
 			//part[i].note = default_note.slice();
 			//part[i].note = i;
 		}
-		
 		script.rulemap = this.patcher.getnamed('settings').subpatcher().getnamed('rulemap');
 		this.patcher.getnamed('poly').message('target', 0);
 		selected_filter.message('offset', 1);
@@ -348,18 +355,18 @@ function initialize(val)
 		transport_change.message('set', -1);
 		selected = part[0];
 		init_device();
-		for(var i in script)
-		{
-			if((/^_/).test(i))
-			{
-				//debug('replacing', i, '\n');
-				script[i.replace('_', "")] = script[i];
-			}
-		}
-		
+		deprivatize_script_functions(this);
+		//for(var i in script)
+		//{
+		//	if((/^_/).test(i))
+		//	{
+				//debug('replacing', i);
+		//		script[i.replace('_', "")] = script[i];
+		//	}
+		//}
 		Alive = 1;
 		clear_surface();
-		
+
 		storage.message('recall', 1);
 
 		refresh_extras();
@@ -391,6 +398,8 @@ function initialize(val)
 			mod.Send( 'cntrlr_encoder_grid', 'mode', i, 2, 0);
 		}while(i--);
 		keymodegui.message('int', 8);
+		mod.Send('grid', 'value', 0, 0, 1);
+		//mod.Send('recieve_translation', )
 	}
 	else
 	{
@@ -404,10 +413,10 @@ function make_obj_setter(part, obj)
 	if(obj.pattr == 'hidden')
 	{
 		var setter = function(val)
-		{	
+		{
 			if(val!=undefined)
 			{
-				debug('setter hidden', obj.Name, val, '\n');
+				debugSETTER('setter hidden', obj.Name, val);
 				var num = part.num;
 				part[obj.Name] = val;
 				part.obj[obj.Name].message(obj.Type, val);
@@ -422,7 +431,7 @@ function make_obj_setter(part, obj)
 			{
 				if(val!=undefined)
 				{
-					debug('setter bang\n');
+					debugSETTER('setter bang');
 					part[obj.Name].message('bang');
 				}
 			}
@@ -430,8 +439,8 @@ function make_obj_setter(part, obj)
 		else
 		{
 			var setter = function(val)
-			{	
-				debug('setter object\n');
+			{
+				debugSETTER('setter object');
 				if(val!=undefined)
 				{
 					part[obj.Name] = val;
@@ -443,10 +452,10 @@ function make_obj_setter(part, obj)
 	else
 	{
 		var setter = function(val, pset)
-		{	
+		{
 			if(val!=undefined)
 			{
-				debug('setter pattr\n');
+				debugSETTER('setter pattr');
 				var num = part.num;
 				if(!pset){
 					var pset = presets[num];
@@ -455,13 +464,13 @@ function make_obj_setter(part, obj)
 				}
 				if(!locked)
 				{
-					debug('storing', obj.Name, 'in', obj.pattr, 'at', pset, 'with', val, '\n');
+					debugSETTER('storing', obj.Name, 'in', obj.pattr, 'at', pset, 'with', val);
 					storage.setstoredvalue('poly.'+(num+1)+'::'+obj.pattr, pset, val);
 				}
 			}
 		}
 	}
-	return setter;	
+	return setter;
 }
 
 //make a closure to hold the getter function for any object in the poly patcher that is contained in the Objs dict
@@ -492,7 +501,7 @@ function make_pset_edit_input(num)
 	{
 		var args = arrayfromargs(arguments);
 		part[num].edit_buffer = args;
-		//post('received input', num, args, '\n');
+		//post('received input', num, args);
 		//var x=(args.length-1);do{
 		//	mod.Send( 'grid', x, num+2, args[x]);
 		//}while(x--);
@@ -507,7 +516,7 @@ function make_tvel_edit_input(num)
 	var pset_tvel_input = function()
 	{
 		var args = arrayfromargs(arguments);
-		//post('received velocities', num, args, '\n');
+		//post('received velocities', num, args);
 		var x=(args.length-1);do{
 			mod.Send( 'grid', 'value', x, num+2, part[num].edit_buffer[x]*ACCENTS[Math.floor(args[x]/8)]);
 		}while(x--);
@@ -518,12 +527,12 @@ function make_tvel_edit_input(num)
 //dummy callback to compensate for api bug in Max6
 function callback()
 {
-	debug('callback', arguments, '\n');
+	//debug('callback', arguments);
 }
 
 //called by init to initialize state of polys
 function init_poly()
-{	 
+{
 	//poly.message('target', 0);
 	mod.Send( 'batch', 'c_grid', 0);
 	grid_out('batch', 'grid', 0);
@@ -546,14 +555,14 @@ function init_poly()
 		part[i].obj.channel.message('int', part[i].channel);
 		part[i].obj.behavior_enable.message('int', part[i].behavior_enable);
 		//update_note_pattr(part[i]);
-		
+
 	}
 }
 
 //called by init to initialize state of gui objects
 function _clear_surface()
 {
-	debug('clear_surface\n');
+	debug('clear_surface');
 	stepmodegui.message('int', 0);
 }
 
@@ -569,7 +578,7 @@ function _dissolve()
 		}
 	}
 	Alive=0;
-	post('Hex dissolved.\n');	   
+	post('Hex dissolved.');
 }
 
 ///////////////////////////
@@ -590,8 +599,8 @@ function setup_translations()
 	'add_translation', 'alias_name', 'address', 'target_group', n.
 	Then, to invoke this translation, we'd call:
 	'receive_translation', 'alias_name', 'column', nn.
-	This would cause all leds on the column[n] to be lit with color[nn].  
-	
+	This would cause all leds on the column[n] to be lit with color[nn].
+
 	It's important to note that using batch_row/column calls will wrap to the next column/row, whereas column/row commands will
 	only effect their actual physical row on the controller.*/
 
@@ -605,7 +614,7 @@ function setup_translations()
 	mod.Send( 'add_translation', 'pads_batch', 'po10_grid', 'cntrlr_pads', 0);
 	mod.Send( 'add_translation', 'keys_batch', 'po10_key', 'po10_keys', 0);
 	mod.Send( 'add_translation', 'keys_batch_fold', 'po10_key', 'po10_keys', 0, 16);
-	mod.Send( 'add_translation', 'keys2_batch', 'po10_key', 'po10_keys2', 1); 
+	mod.Send( 'add_translation', 'keys2_batch', 'po10_key', 'po10_keys2', 1);
 	mod.Send( 'add_translation', 'keys2_batch_fold', 'po10_key', 'po10_keys', 1, 16);
 	for(var i=0;i<8;i++)
 	{
@@ -624,7 +633,7 @@ function setup_colors()
 
 function refresh_pads()
 {
-	debug('refresh_pads\n');
+	debug('refresh_pads');
 	switch(pad_mode)
 	{
 		case 0:
@@ -707,7 +716,7 @@ function refresh_pads()
 					}while(j--);
 				}while(i--);
 			}
-			break;	  
+			break;
 	}
 }
 
@@ -727,9 +736,9 @@ function refresh_c_keys()
 				keygui.message(i, 0, v);
 				batch.unshift(v);
 			}while(i--);
-			if(grid_mode == 0){ 
+			if(grid_mode == 0){
 				mod.Send( 'receive_translation', 'keys_batch', 'batch_mask_row', -1);
-				mod.Send( 'receive_translation', 'keys_batch_fold', 'batch_row_fold', batch); 
+				mod.Send( 'receive_translation', 'keys_batch_fold', 'batch_row_fold', batch);
 			}
 			break;
 		case 2:
@@ -737,7 +746,7 @@ function refresh_c_keys()
 				batch.unshift(Colors[part[selected.num].behavior[i]]);
 				keygui.message(i, 0, selected.behavior[i]+8);
 			}while(i--);
-			if(grid_mode == 0){ 
+			if(grid_mode == 0){
 				mod.Send( 'receive_translation', 'keys_batch', 'batch_mask_row', -1);
 				mod.Send( 'receive_translation', 'keys_batch_fold', 'batch_row_fold', batch);
 			}
@@ -749,9 +758,9 @@ function refresh_c_keys()
 				batch.unshift(v);
 				keygui.message(i, 0, v);
 			}while(i--);
-			if(grid_mode == 0){ 
+			if(grid_mode == 0){
 				mod.Send( 'receive_translation', 'keys_batch', 'batch_mask_row', -1);
-				mod.Send( 'receive_translation', 'keys_batch_fold', 'batch_row_fold', batch); 
+				mod.Send( 'receive_translation', 'keys_batch_fold', 'batch_row_fold', batch);
 			}
 			break;
 		case 4:
@@ -761,9 +770,9 @@ function refresh_c_keys()
 				batch.unshift(v);
 				keygui.message(i, 0, v);
 			}while(i--);
-			if(grid_mode == 0){ 
+			if(grid_mode == 0){
 				mod.Send( 'receive_translation', 'keys_batch', 'batch_mask_row', -1);
-				mod.Send( 'receive_translation', 'keys_batch_fold', 'batch_row_fold', batch); 
+				mod.Send( 'receive_translation', 'keys_batch_fold', 'batch_row_fold', batch);
 			}
 			break;
 		case 5:
@@ -771,9 +780,9 @@ function refresh_c_keys()
 				batch.unshift(4);
 				keygui.message(i, 0, 4);
 			}while(i--);
-			if(grid_mode == 0){ 
+			if(grid_mode == 0){
 				mod.Send( 'receive_translation', 'keys_batch', 'batch_mask_row', -1);
-				mod.Send( 'receive_translation', 'keys_batch_fold', 'batch_row_fold', batch); 
+				mod.Send( 'receive_translation', 'keys_batch_fold', 'batch_row_fold', batch);
 				mod.Send( 'receive_translation', 'keys_'+i, 'mask', selected.note[current_step], 5);
 			}
 			break;
@@ -814,10 +823,10 @@ function refresh_c_keys()
 				batch.unshift(Math.floor(v));
 				keygui.message(i, 0, v);
 			}while(i--);
-			if(grid_mode == 0){ 
+			if(grid_mode == 0){
 				mod.Send( 'receive_translation', 'keys_batch', 'batch_mask_row', -1);
 				//debug('batch is:', batch);
-				mod.Send( 'receive_translation', 'keys_batch_fold', 'batch_row_fold', batch); 
+				mod.Send( 'receive_translation', 'keys_batch_fold', 'batch_row_fold', batch);
 			}
 			break;
 		default:
@@ -834,7 +843,7 @@ function refresh_c_keys()
 
 function refresh_grid()
 {
-	//debug('refresh_grid\n');
+	//debug('refresh_grid');
 	switch(grid_mode)
 	{
 		default:
@@ -855,10 +864,10 @@ function refresh_grid()
 			break;
 		case 2:
 			//Poly_Rec_mode
-			mod.Send( 'grid', 'value', 0, 0, selected.hold*7); 
-			//mod.Send( 'grid', 'value',0, 15, selected.hold*7); 
-			//mod.Send( 'grid', 'value',15, 0, selected.hold*7); 
-			//mod.Send( 'grid', 'value',15, 15, selected.hold*7); 
+			mod.Send( 'grid', 'value', 0, 0, selected.hold*7);
+			//mod.Send( 'grid', 'value',0, 15, selected.hold*7);
+			//mod.Send( 'grid', 'value',15, 0, selected.hold*7);
+			//mod.Send( 'grid', 'value',15, 15, selected.hold*7);
 			var i=7;do{
 				mod.Send( 'grid', 'value', i+1, 0, presets[selected.num] == i+1 ? 1 : 0);
 			}while(i--);
@@ -885,7 +894,7 @@ function refresh_grid()
 					mod.Send( 'grid', 'value', 7, i, BEHAVE_COLORS[i] * Math.floor(i==current_rule));
 			}while(i--);
 			break;
-	}	
+	}
 }
 
 function refresh_keys()
@@ -938,7 +947,7 @@ function button_in(x, y, val)
 function anything()
 {
 	var args = arrayfromargs(arguments);
-	if(DEBUGANYTHING){post('anything', messagename, arguments, '\n');}
+	if(DEBUGANYTHING){post('anything', messagename, arguments);}
 	switch(messagename)
 	{
 		case 'settingsgui':
@@ -966,7 +975,7 @@ function anything()
 							keymodeenables.push(i);
 						}
 					}
-					debug('keymodeenables', keymodeenables, '\n');
+					debug('keymodeenables', keymodeenables);
 					break;
 				case 15:
 					vals = args.slice(1, 8);
@@ -979,7 +988,7 @@ function anything()
 							padmodeenables.push(i);
 						}
 					}
-					debug('padmodeenables', padmodeenables, '\n');
+					debug('padmodeenables', padmodeenables);
 					break;
 			}
 			break;
@@ -999,9 +1008,9 @@ function anything()
 					locked = args[1];
 					break;
 			}
-			break;			
+			break;
 		default:
-			debug('anything', messagename, args, '\n');
+			debug('anything', messagename, args);
 			break;
 	}
 }
@@ -1009,7 +1018,7 @@ function anything()
 var _po10_encoder_button_grid = _c_button;
 function _c_button(x, y, val)
 {
-	debug('button_in', x, y, val, '\n');
+	debug('button_in', x, y, val);
 	switch(y)
 	{
 		case 0:
@@ -1048,14 +1057,14 @@ function _c_button(x, y, val)
 					break;
 			}
 			break;
-	}	 
+	}
 }
 
 var _po10_key = _c_key;
 
 function _c_key(x, y, val)
 {
-	debug('c key in', x, y, val, '\n');
+	debug('c key in', x, y, val);
 	num = (x + (y*16));
 	if((y==1)&&(val>0))
 	{
@@ -1074,11 +1083,12 @@ function _c_key(x, y, val)
 		refresh_grid();
 		mod.Send( 'cntrlr_encoder_grid', 'custom', selected.num%4, Math.floor(selected.num/4)%2, selected.pattern);
 		//mod.Send( 'to_c_wheel', selected.num%4, Math.floor(selected.num/4)%2, 'custom', 'x'+(selected.pattern.join('')));
-	}	 
+	}
 	else
 	{
 		switch(key_mode)
 		{
+			//mute mode
 			default:
 				if(val>0)
 				{
@@ -1091,6 +1101,7 @@ function _c_key(x, y, val)
 					add_automation(Part, 'mute', Part.active);
 				}
 				break;
+			//loop mode
 			case 1:
 				if((key_pressed == num)&&(val==0))
 				{
@@ -1110,6 +1121,7 @@ function _c_key(x, y, val)
 				update_step();
 				refresh_c_keys();
 				break;
+			//behavior mode
 			case 2:
 				if(val>0)
 				{
@@ -1119,6 +1131,7 @@ function _c_key(x, y, val)
 					refresh_c_keys();
 					break;
 				}
+			//preset mode
 			case 3:
 				if((val>0)&&(key_pressed<0))
 				{
@@ -1140,6 +1153,7 @@ function _c_key(x, y, val)
 					key_pressed = -1;
 				}
 				break;
+			//global mode
 			case 4:
 				if((val>0)&&(pad_pressed<0))
 				{
@@ -1162,8 +1176,9 @@ function _c_key(x, y, val)
 				else
 				{
 					key_pressed = -1;
-				} 
+				}
 				break;
+			//polyrec mode
 			case 5:
 				if(val>0)
 				{
@@ -1177,16 +1192,18 @@ function _c_key(x, y, val)
 					step.message('zoom', 0, 16);
 					refresh_c_keys();
 				}
-				break;	
+				break;
+			//polyplay mode
 			case 6:
 				play_sequence(selected, num, val);
 				refresh_c_keys();
 				break;
+			//accent mode
 			case 7:
 				if(val>0)
 				{
 					selected.velocity[num] = ACCENT_VALS[(ACCENTS[Math.floor(selected.velocity[num]/8)])%4];
-					//post('vel:', selected.velocity[num], 'calc:', (Math.floor(selected.velocity[num]/8)), '\n');
+					//post('vel:', selected.velocity[num], 'calc:', (Math.floor(selected.velocity[num]/8)));
 					selected.obj.set.velocity(selected.velocity);
 					refresh_c_keys();
 				}
@@ -1223,7 +1240,7 @@ function _c_key(x, y, val)
 					else
 					{
 						key_pressed = -1;
-					} 
+					}
 					break;
 				}
 				else if(val>0)
@@ -1257,6 +1274,7 @@ function _c_grid(x, y, val)
 	debug('_c_grid', x, y, val);
 	switch(pad_mode)
 	{
+		//select mode
 		default:
 			if((val>0)&&(pad_pressed<0))
 			{
@@ -1275,6 +1293,7 @@ function _c_grid(x, y, val)
 				copy_pattern(selected, part[x + (y*4)]);
 			}
 			break;
+		//add mode
 		case 1:
 			if(val>0)
 			{
@@ -1291,6 +1310,7 @@ function _c_grid(x, y, val)
 				change_key_mode(last_key_mode);*/
 			}
 			break;
+		//mute mode
 		case 2:
 			if(val>0)
 			{
@@ -1301,8 +1321,9 @@ function _c_grid(x, y, val)
 				add_automation(Part, 'mute', Part.active);
 			}
 			break;
+		//preset mode
 		case 3:
-			debug('pad_pressed', pad_pressed, '\n');
+			debug('pad_pressed', pad_pressed);
 			if((val>0)&&(pad_pressed<0))
 			{
 				pad_pressed = x + (y*4);
@@ -1324,6 +1345,7 @@ function _c_grid(x, y, val)
 				pad_pressed = -1;
 			}
 			break;
+		//global mode
 		case 4:
 			if((val>0)&&(pad_pressed<0))
 			{
@@ -1347,8 +1369,9 @@ function _c_grid(x, y, val)
 			else
 			{
 				pad_pressed = -1;
-			}	
+			}
 			break;
+		//freewheel mode
 		case 5:
 			if((val>0)&&(pad_pressed<0))
 			{
@@ -1367,15 +1390,16 @@ function _c_grid(x, y, val)
 				sync_wheels(selected, part[x + (y*4)]);
 			}
 			break;
+		//play mode
 		case 6:
 			if(val>0)
 			{
 				var p = x+(y*4);
 				play_note(part[p]);
-				
+
 			}
 			break;
-
+		//polyplay mode
 		case 7:
 			//post('pad_play', x, y, val);
 			var num = x + (y*4);
@@ -1422,7 +1446,7 @@ function _c_grid(x, y, val)
 
 function _grid(x, y, val)
 {
-	debug('_grid', x, y, val, '\n');
+	debug('_grid', x, y, val);
 	switch(grid_mode)
 	{
 		default:
@@ -1460,7 +1484,7 @@ function _grid(x, y, val)
 								set_record(0);
 							}
 							else
-							{						
+							{
 								grid_pressed = x + (y*16);
 								preset = x+1;
 								var i=15;do{
@@ -1497,7 +1521,7 @@ function _grid(x, y, val)
 						refresh_grid();
 						break;
 					default:
-						var Part = part[y-2], cur_step = Part.edit_buffer[x], 
+						var Part = part[y-2], cur_step = Part.edit_buffer[x],
 							cur_vel = Part.edit_velocity[x], new_vel = ACCENT_VALS[Tvel];
 						if((cur_step)&&(cur_vel!=new_vel))
 						{
@@ -1518,8 +1542,8 @@ function _grid(x, y, val)
 						{
 							var quad = (x+8)%16;
 							Part.edit_buffer[quad] = cur_step;
-							Part.edit_velocity[quad] = ACCENT_VALS[Tvel];	
-						}							
+							Part.edit_velocity[quad] = ACCENT_VALS[Tvel];
+						}
 						if(edit_preset!=preset)
 						{
 							//don't send to objects since this is for a non-loaded preset
@@ -1617,7 +1641,7 @@ function _grid(x, y, val)
 					//play_sequence(selected, ((x-(root>>6)%16)<<6) + (y-(root>>10)<<10) + 32, val);
 					play_sequence(selected, (x<<6) + (y<<10) + 32, val);
 					refresh_c_keys();
-					refresh_grid(); 
+					refresh_grid();
 				}
 			}
 			break;
@@ -1638,7 +1662,7 @@ function _grid(x, y, val)
 				{
 					presets[y] = x+1;
 					storage.message('recall', 'poly.'+(y+1), presets[y]);
-					Part.pattern = Part.obj.pattern.getvalueof();	
+					Part.pattern = Part.obj.pattern.getvalueof();
 				}
 				Part.obj.restartcount.message(0);
 				Part.obj.set.clutch(1);
@@ -1725,7 +1749,7 @@ function _grid(x, y, val)
 
 function _base_grid(x, y, val)
 {
-	debug('_base_grid', x, y, val, '\n');
+	debug('_base_grid', x, y, val);
 	if(shifted)
 	{
 		if(y<2)
@@ -1758,13 +1782,13 @@ function _code_grid(x, y, val)
 
 function _push_grid(x, y, val)
 {
-	debug('push_grid', x, y, val, '\n');
+	debug('push_grid', x, y, val);
 	_grid(x, y, val);
 }
 
 function _shift(val)
 {
-	debug('shift:', val, '\n');
+	debug('shift:', val);
 	if(val!=shifted)
 	{
 		shifted = val;
@@ -1787,7 +1811,7 @@ function _shift(val)
 
 function _key(num, val)
 {
-	debug('_key', num, val, '\n');
+	debug('_key', num, val);
 	switch(altVal)
 	{
 		default:
@@ -1816,7 +1840,7 @@ function surface_offset(val)
 //this is mainly for the select-hold
 function _msg_int(val)
 {
-	debug('msg_int', val, '\n');
+	debug('msg_int', val);
 	if((inlet==2)&&(pad_pressed==val))
 	{
 		change_key_mode(pad_invoked_key_mode);
@@ -1846,7 +1870,7 @@ function _alt(val)
 
 function _alt_in(val)
 {
-	debug('alt_in', val, '\n');
+	debug('alt_in', val);
 	altVal = Math.floor(val>0);
 	switch(altVal)
 	{
@@ -1878,16 +1902,16 @@ function _alt_in(val)
 //called by gui object, sets visible portion of live.step
 function _mode(val)
 {
-	debug('mode', val, '\n');
+	debug('mode', val);
 	step_mode = val;
 	step.message('mode', Modes[step_mode]);
 }
 
-//from live.step	
+//from live.step
 function _step_in()
 {
 	var args = arrayfromargs(arguments);
-	if(DEBUG_STEP){post('step_in', args, '\n');}
+	if(DEBUG_STEP){post('step_in', args);}
 	switch(args[0])
 	{
 		case 0:
@@ -1900,7 +1924,7 @@ function _step_in()
 				case 'changed':
 					var new_value = step.getvalueof();
 					outlet(3, step_value);
-					if(DEBUG_STEP){post('old', step_value);} 
+					if(DEBUG_STEP){post('old', step_value);}
 					outlet(2, new_value);
 					break;
 			}
@@ -1912,7 +1936,7 @@ function _step_in()
 //distributes input from gui button and menu elements
 function _guibuttons(num, val)
 {
-	debug('gui_buttons', num, val, '\n');
+	debug('gui_buttons', num, val);
 	switch(num)
 	{
 		case 0:
@@ -1953,8 +1977,8 @@ function _guibuttons(num, val)
 				{
 					selected.obj.nexttime.message('bang');
 				}
-				BaseTime.message('set', TRANS[selected.notetype][val][0]);	
-				script['Speed'+(selected.num+1)].message('set', TRANS[selected.notetype][val][1]);							
+				BaseTime.message('set', TRANS[selected.notetype][val][0]);
+				script['Speed'+(selected.num+1)].message('set', TRANS[selected.notetype][val][1]);
 			}
 			break;
 		case 5:
@@ -1968,7 +1992,7 @@ function _guibuttons(num, val)
 				{
 					selected.obj.nexttime.message('bang');
 				}
-				BaseTime.message('set', TRANS[val][notevalues][0]); 
+				BaseTime.message('set', TRANS[val][notevalues][0]);
 			}
 			break;
 		case 6:
@@ -2014,7 +2038,7 @@ function _guibuttons(num, val)
 			selected.obj.set.direction(val);
 			break;
 		case 14:
-			debug('lock', val, '\n');
+			debug('lock', val);
 			locked = val;
 			break;
 		case 15:
@@ -2033,7 +2057,7 @@ function _guibuttons(num, val)
 //distributes input from gui grid element
 function _padgui_in(val)
 {
-	debug('padguiin', val, '\n');
+	debug('padguiin', val);
 	_c_grid(val%4, Math.floor(val/4), 1);
 	_c_grid(val%4, Math.floor(val/4), 0);
 }
@@ -2041,16 +2065,16 @@ function _padgui_in(val)
 //distributes input from gui key element
 function _keygui_in(val)
 {
-	debug('keyguiin', val, '\n');
+	debug('keyguiin', val);
 	_c_key(val%16, Math.floor(val/16), 1);
 	_c_key(val%16, Math.floor(val/16), 0);
-	
+
 }
 
 //displays played notes on grid
 function _blink(val)
 {
-	//if(DEBUG_BLINK){post('blink', val, '\n');}
+	//if(DEBUG_BLINK){post('blink', val);}
 	if(grid_mode == 0)
 	{
 		mod.Send( 'receive_translation', 'keys2_'+last_mask, 'mask', -1);
@@ -2062,7 +2086,7 @@ function _blink(val)
 //displays played notes on keys
 function _vblink(num, val)
 {
-	debugblink('vblink', val, '\n');
+	debugblink('vblink', val);
 	if(grid_mode == 0)
 	{
 		if(key_mode==0)
@@ -2085,42 +2109,55 @@ function _settingsgui(num, val)
 	val = args[1];
 	switch(num)
 	{
+		//select+hold option
 		case 0:
 			pad_invoked_key_mode = val;
 			break;
+		//immediate timing option
 		case 1:
 			timing_immediate = val;
 			break;
+		//global offset
 		case 2:
 			global_chain_offset = val;
 			_select_chain(selected.num);
 			break;
+		//empty
 		case 3:
 			break;
+		//transpose steps
 		case 4:
 			transpose_steps = val;
 			break;
+		//randomize pattern
 		case 5:
 			randomize_pattern(randomize_global);
 			break;
+		//randomize velocity
 		case 6:
 			randomize_velocity(randomize_global);
 			break;
+		//randomize duration
 		case 7:
 			randomize_duration(randomize_global);
 			break;
+		//randomize behavior
 		case 8:
 			randomize_behavior(randomize_global);
 			break;
+		//randomize rulebends
 		case 9:
 			randomize_rulebends(randomize_global);
 			break;
+		//full reset
 		case 10:
 			reset_data(randomize_global);
 			break;
+		//randomize global
 		case 12:
 			randomize_global = val;
 			break;
+		//randomize all
 		case 11:
 			randomize_pattern(randomize_global);
 			randomize_velocity(randomize_global);
@@ -2128,9 +2165,11 @@ function _settingsgui(num, val)
 			randomize_behavior(randomize_global);
 			randomize_rulebends(randomize_global);
 			break;
+		//randomize rules
 		case 13:
 			randomize_rules();
 			break;
+		//keymode enables
 		case 14:
 			vals = args.slice(1, 9);
 			keymodeenables = [];
@@ -2141,8 +2180,9 @@ function _settingsgui(num, val)
 					keymodeenables.push(i);
 				}
 			}
-			debug('keymodeenables', keymodeenables, '\n');
+			debug('keymodeenables', keymodeenables);
 			break;
+		//padmode enables
 		case 15:
 			vals = args.slice(1, 8);
 			padmodeenables = args.slice(1, 8);
@@ -2154,16 +2194,17 @@ function _settingsgui(num, val)
 					padmodeenables.push(i);
 				}
 			}
-			debug('padmodeenables', padmodeenables, '\n');
+			debug('padmodeenables', padmodeenables);
 			break;
+		//behavior enables
 		case 16:
 			vals = args.slice(1, 17);
-			debug('behavior enables:', vals, '\n');
+			debug('behavior enables:', vals);
 			for(var i=0;i<16;i++)
 			{
 				if(vals[i+1]!=part[i].behavior_enable)
 				{
-					debug('part', i, 'behavior enable, was', part[i].behavior_enable, ', setting:', vals[i+1], '\n');
+					debug('part', i, 'behavior enable, was', part[i].behavior_enable, ', setting:', vals[i+1]);
 					part[i].behavior_enable = vals[i+1];
 					part[i].obj.set.behavior(vals[i+1]);
 				}
@@ -2195,17 +2236,17 @@ function _remote(num, val)
 	}
 }
 
-//distribute 
+//distribute
 function _receive_automation(num, val)
 {
 	if((play_enabled>0)&&(num>110)&&(val!==0))
 	{
 		num-=111;
-		if(DEBUG_REC){post('receive auto:', num, val, '\n');}
+		debugrec('receive auto:', num, val);
 		if(val>9)
 		{
 			presets[part[num].num] = val-10;
-			if(DEBUG_REC){post('preset change:', part[num].num+1, presets[part[num].num], '\n');}
+			debugrec('preset change:', part[num].num+1, presets[part[num].num]);
 			storage.message('recall', 'poly.'+(part[num].num+1), presets[part[num].num]);
 		}
 		else if(val>0)
@@ -2227,11 +2268,11 @@ function _receive_automation(num, val)
 function _grid_play(x, y, voice, val, poly)
 {
 	//var args = arrayfromargs(arguments);
-	debug('_grid_play', x, y, voice, val, poly, '\n');
+	debug('_grid_play', x, y, voice, val, poly);
 	switch(grid_mode)
 	{
 		case 2:
-			debug('sel:', selected.num, poly, '\n');
+			debug('sel:', selected.num, poly);
 			if(altVal>0)
 			{
 				if((voice==0)&&((poly-1)==selected.num))
@@ -2259,11 +2300,11 @@ function _grid_play(x, y, voice, val, poly)
 //called by pattr when it recalls a preset
 ////need to figure out how to deal with global preset loading....there's missing data doing things this way.
 function _recall()
-{	 
-		if(DEBUG_PTR){post('recall\n');}
+{
+		if(DEBUG_PTR){post('recall');}
 		for(var item in Objs)
 		{
-			//post(Objs[item], typeof(selected[Objs[item]]), 'retrieving...\n');
+			//debug(Objs[item], typeof(selected[Objs[item]]), 'retrieving...');
 			selected.obj.get[Objs[item].Name]();
 		}
 		selected.nudge = Math.floor(selected.obj.nudge.getvalueof());
@@ -2307,7 +2348,7 @@ function make_funcs(part)
 	var new_part = [];
 	new_part.stepLoop = function(In, Out)
 	{
-		if(DEBUG_STEP){post('step Loop', In, Out, '\n');}
+		debugstep('step Loop', In, Out);
 		selected.nudge = In;
 		selected.obj.nudge.message('set', selected.nudge);
 		selected.obj.set.nudge(selected.nudge, presets[selected.num]);
@@ -2319,42 +2360,42 @@ function make_funcs(part)
 	}
 	new_part.stepDir = function(step, val)
 	{
-		if(DEBUG_STEP){post('step Dir', step, val, '\n');}
+		debugstep('step Dir', step, val);
 		//part.direction = val;
 		//part.obj.direction.message('int', val);
 		part.obj.set.direction(val);
 	}
 	new_part.stepNote = function(step, val)
 	{
-		if(DEBUG_STEP){post('step note', step, val, '\n');}
+		debugstep('step note', step, val);
 		part.note[step] = val;
 		part.obj.set.note(part.note);
 	}
 	new_part.stepVel = function(step, val)
 	{
-		if(DEBUG_STEP){post('step vel', step, val, '\n');}
+		debugstep('step vel', step, val);
 		part.velocity[step] = val;
 		part.obj.set.velocity(part.velocity);
 	}
 	new_part.stepDur = function(step, val)
 	{
-		if(DEBUG_STEP){post('step dur', step, val, '\n');}
+		debugstep('step dur', step, val);
 		part.duration[step] = val;
 		part.obj.set.duration(part.duration);
 	}
 	new_part.stepExtra1 = function(step, val)
 	{
-		if(DEBUG_STEP){post('step extra1', step, val, '\n');}
+		debugstep('step extra1', step, val);
 		part.pattern[step] = val;
 		part.obj.set.pattern(part.pattern);
 		refresh_c_keys();
 	}
 	new_part.stepExtra2 = function(step, val)
 	{
-		if(DEBUG_STEP){post('step extra2', step, val, '\n');}
+		debugstep('step extra2', step, val);
 		part.rulebends[step] = val;
 		part.obj.set.rulebends(part.rulebends);
-	}		 
+	}
 	return new_part
 }
 
@@ -2363,7 +2404,7 @@ function update_step()
 {
 	//set_dirty(1);
 	step_value = step.getvalueof();
-	if(DEBUG_STEP){post('update step: step_value', step_value.length, '\n', step_value, '\n');}
+	debugstep('update step: step_value', step_value.length, step_value);
 	selected.nudge = parseInt(selected.obj.nudge.getvalueof());
 	selected.steps = parseInt(selected.obj.steps.getvalueof());
 	step_value[5] = Math.floor(selected.nudge);
@@ -2382,7 +2423,7 @@ function update_step()
 		step_value[s + 3] = selected.pattern[i];
 		step_value[s + 4] = selected.rulebends[i];
 	}while(i--);
-	if(DEBUG_STEP){post('to step', step_value.length, '\n', step_value, '\n');}
+	debugstep('to step', step_value.length, step_value);
 	step.setvalueof(step_value);
 }
 
@@ -2392,13 +2433,12 @@ function update_poly()
 	//set_dirty(1);
 	var args = arrayfromargs(arguments);
 	step_value = step.getvalueof();
-	if(DEBUG_STEP){post('update_poly\n unmatching args', args, '\n');}
-	//for(var i in args)
+	debugstep('update_poly\n unmatching args', args);
 	var i = args.length;do{
 		if(args[i]>10)
 		{
 			var index = args[i]-11;
-			if(DEBUG_STEP){post(args[i], '\n');}
+			debugstep(args[i]);
 			selected.funcs[Funcs[index%5]](Math.floor(index/5), step_value[index+11]);
 		}
 		else
@@ -2412,7 +2452,7 @@ function update_poly()
 					selected.funcs.stepLoop(step_value[args[i]-1], step_value[args[i]]-1);
 					break;
 			}
-		}		 
+		}
 	}while(i--);
 }
 
@@ -2424,7 +2464,7 @@ function update_poly()
 //change the function of the keys
 function change_key_mode(val)
 {
-	debug('key_mode', val, '\n');
+	debug('key_mode', val);
 	key_pressed = -1;
 	key_mode = val;
 	switch(key_mode)
@@ -2456,7 +2496,7 @@ function change_pad_mode(val)
 	refresh_pads();
 	update_bank();
 }
-	
+
 //change the function of the grid
 function change_grid_mode(val)
 {
@@ -2480,7 +2520,7 @@ function change_grid_mode(val)
 		mod.Send( 'enable_translation', 'buttons_'+i, 'push_grid', (!val));
 	}while(i--);
 	mod.Send( 'grid', 'all', 0);
-	
+
 	if(grid_mode == 1)
 	{
 			edit_preset = preset;
@@ -2519,7 +2559,7 @@ function select_pattern(num)
 	{
 		update_bank();
 	}
-}	 
+}
 
 function clear_pattern(dest)
 {
@@ -2532,16 +2572,16 @@ function clear_pattern(dest)
 
 function copy_pattern(src, dest)
 {
-	debug('copy pattern', src.num, dest.num, '\n');
+	debug('copy pattern', src.num, dest.num);
 	dest.obj.set.pattern(src.pattern);
 }
 
 function copy_preset(part, dest)
 {
-	debug('preset: copy', 'poly.'+(part.num+1), presets[part.num], dest, '\n');
+	debug('preset: copy', 'poly.'+(part.num+1), presets[part.num], dest);
 	for(var index in Objs)
 	{
-		debug('copy', 'poly.'+(part.num+1)+'::'+Objs[index].pattr, presets[part.num], dest, '\n');
+		debug('copy', 'poly.'+(part.num+1)+'::'+Objs[index].pattr, presets[part.num], dest);
 		var type = Objs[index].pattr;
 		var types = {'object':0, 'hidden':0};
 		if(!(type in types))
@@ -2554,7 +2594,7 @@ function copy_preset(part, dest)
 
 function copy_global_preset(src, dest)
 {
-	debug('copy global preset', 'copy', src, dest, '\n');
+	debug('copy global preset', 'copy', src, dest);
 	storage.copy(src, dest);
 }
 
@@ -2578,7 +2618,7 @@ function play_sequence(part, note, press)
 		//if the num wasn't already being held
 		if(trig == -1)
 		{
-			debug('decoded:', (note>>6)%16, note>>10, '\n');
+			debug('decoded:', (note>>6)%16, note>>10);
 			part.triggered.push(note);
 			part.obj.polyplay.message('midinote', note, 1);
 		}
@@ -2624,7 +2664,7 @@ function change_transpose(val)
 {
 	if(selected.channel==0)
 	{
-		debug('global_offset', val, '\n');
+		debug('global_offset', val);
 		global_offset = (Math.max(Math.min(val, 112), 0));
 		transposegui.message('set', global_offset);
 		for(var i = 0;i< 16;i++)
@@ -2634,13 +2674,13 @@ function change_transpose(val)
 			part[i].obj.set.noteoffset(global_offset+i);
 		}
 		_select_chain(selected.num);
-	}	
+	}
 }
 
 //called from key_in, change the loopOut point and update it to live.step and poly
 function change_Out(val)
 {
-	debug('change Out', val, '\n');
+	debug('change Out', val);
 	selected.obj.set.steps(val-parseInt(selected.nudge));
 	update_step();
 	refresh_c_keys();
@@ -2649,7 +2689,7 @@ function change_Out(val)
 //called from key_in, change the loopIn point and update it to the live.step and poly
 function change_In(val)
 {
-	debug('change In', val, '\n');
+	debug('change In', val);
 	var change = parseInt(selected.nudge) - val;
 	selected.nudge = val;
 	if(timing_immediate)
@@ -2674,7 +2714,7 @@ function change_In(val)
 //add a note from the pads to the appropriate poly, and trigger a message back from it
 function add_note(part)
 {
-	debug('add_note', part.num, '\n');
+	debug('add_note', part.num);
 	part.obj.addnote.message('bang');
 	part.pattern[curSteps[part.num]]=1;
 	part.obj.set.pattern(part.pattern);
@@ -2693,7 +2733,7 @@ function add_note(part)
 
 function play_note(part)
 {
-	debug('play_note', part.num, '\n');
+	debug('play_note', part.num);
 	part.obj.addnote.message('bang');
 }
 
@@ -2702,7 +2742,7 @@ function _addnote(num, val)
 {
 	num += -1;
 	val += -1;
-	debug('addnote', num, val, '\n');
+	debug('addnote', num, val);
 	part[num].pattern[val] = 1;
 	part[num].obj.set.pattern(part[num].pattern);
 	refresh_c_keys();
@@ -2712,7 +2752,7 @@ function _addnote(num, val)
 //rotate the pattern based on the blocksize defined in the main patch
 function rotate_pattern(part, len, dir)
 {
-	//post('rotate_pattern', len, dir, '\n');
+	//post('rotate_pattern', len, dir);
 	var bits = Math.ceil(16/len);
 	var Out;
 	var In;
@@ -2769,10 +2809,10 @@ function rotate_wheel(num, pos)
 	switch(grid_mode)
 	{
 		case 0:
-			//debug('rotate_wheel', num, pos, '\n');
+			//debug('rotate_wheel', num, pos);
 			if((key_mode==5)&&(num==selected.num+1))
 			{
-				//post('current_step', num, pos, '\n');
+				//debug('current_step', num, pos);
 				mod.Send( 'receive_translation', 'keys2_'+(selected.note[current_step]), 'mask', -1);
 				mod.Send( 'receive_translation', 'keys2_'+(selected.note[pos]), 'mask', 5);
 			}
@@ -2822,7 +2862,7 @@ function rotate_wheel(num, pos)
 //synchronize two parts when holding down select while selecting another part
 function sync_wheels(master, slave)
 {
-	debug('sync_wheels', master.num, slave.num, '\n');
+	debug('sync_wheels', master.num, slave.num);
 	if(slave.lock != master.lock)
 	{
 		slave.lock = master.lock;
@@ -2840,14 +2880,14 @@ function sync_wheels(master, slave)
 			break;
 	}*/
 	slave.obj.set.timedivisor(master.obj.timedivisor.getvalueof());
-	slave.obj.set.basetime(master.obj.basetime.getvalueof());	
+	slave.obj.set.basetime(master.obj.basetime.getvalueof());
 	update_speed(slave);
 }
 
 //change the variables necessary to change the quantization status of a part
 function change_lock_status(part, dir)
 {
-	if(DEBUG_LOCK){post('change_lock_status', part.num, '\n');}
+	if(DEBUG_LOCK){post('change_lock_status', part.num);}
 	if(dir==undefined){dir = 0;}
 	if(part==selected)
 	{
@@ -2868,7 +2908,7 @@ function update_speed(part)
 //release any polyplay sequences from being held when the hold key is turned off
 function release_held_sequences(part)
 {
-	//post('release held seqs', part.held, '\n');
+	//debug('release held seqs', part.held);
 	for(var i in part.held)
 	{
 		part.obj.polyplay.message('midinote', part.held[i], 0);
@@ -2881,7 +2921,7 @@ function release_held_sequences(part)
 	part.held = [];
 }
 
-//change the hold state of the selected polyplay object 
+//change the hold state of the selected polyplay object
 function poly_hold_toggle()
 {
 	selected.hold = Math.abs(selected.hold-1);
@@ -2902,7 +2942,7 @@ function poly_hold_toggle()
 function set_dirty(val)
 {
 	dirty=val;
-	post('dirty:', val, '\n');
+	debug('dirty:', val);
 }
 
 
@@ -2919,8 +2959,8 @@ function record(val)
 	else
 	{
 		record_enabled = 0;
-	}	 
-	if(DEBUG_REC){post('record_enabled', record_enabled, '\n');}
+	}
+	debugrec('record_enabled', record_enabled);
 }
 
 //check api for current clip and return confirmation of recording
@@ -2929,7 +2969,7 @@ function begin_record()
 	finder.goto('this_device');
 	finder.goto('canonical_parent');
 	var playing_slot_index = parseInt(finder.get('playing_slot_index'));
-	if(DEBUG_REC){post('playing_slot_index:', playing_slot_index, '\n');}
+	debugrec('playing_slot_index:', playing_slot_index);
 	if(playing_slot_index>=0)
 	{
 		finder.goto('clip_slots', playing_slot_index, 'clip');
@@ -2954,16 +2994,16 @@ function add_automation(part, type, val)
 			case 'preset':
 				new_notes = notes.slice(2, -1).concat(['note', part.num+111, Math.round(autoclip.get('playing_position')*100)/100, .2, val+10, 0]);
 				break;
-		}				 
-		if(DEBUG_REC){post('notes:', new_notes, '\n');}
-		finder.call('replace_selected_notes'); 
+		}
+		debugrec('notes:', new_notes);
+		finder.call('replace_selected_notes');
 		finder.call('notes', num+1);
 		for(var i = 0;i<new_notes.length;i+=6)
 		{
 			finder.call('note', new_notes[i+1], new_notes[i+2]+.001, new_notes[i+3]+.001, new_notes[i+4], new_notes[i+5]);
-		} 
+		}
 		finder.call('done');
-		//if(DEBUG_REC){post('new_notes:', finder.call('get_selected_notes'), '\n');}
+		//debugrec('new_notes:', finder.call('get_selected_notes'));
 	}
 }
 
@@ -2990,7 +3030,7 @@ function receive_record(note, val)
 					}
 					if(i==selected.num)
 					{
-						refresh_c_keys();	
+						refresh_c_keys();
 						step.message('velocity', 1, selected.velocity);
 						step.message('extra1', 1, selected.pattern);
 						step.message('zoom', 1, 1);
@@ -3027,7 +3067,7 @@ function randomize_pattern(global)
 				var j=15;do{
 					seq[j]=Math.round(Math.random());
 				}while(j--);
-				part[i].obj.set.pattern(seq, h+1); 
+				part[i].obj.set.pattern(seq, h+1);
 			}while(i--);
 		}while(h--);
 	}
@@ -3213,7 +3253,6 @@ function reset_data(global)
 	}
 	update_step();
 	refresh_c_keys();
-	this.patcher.getnamed('moddial').message('int', 127);
 }
 
 function init_storage()
@@ -3243,13 +3282,13 @@ function init_storage()
 	var h=16;do{
 		storage.message('store', h);
 	}while(h--);
-	post('done!\n');
+	debug('done!');
 }
 
 //remove any masked elements on the CNTRLR
 function demask()
 {
-	post('demask\n');
+	debug('demask');
 }
 
 //update gui elements to reflect current data
@@ -3284,7 +3323,7 @@ function update_bank()
 			mod.Send( 'receive_device', 'set_mod_device_bank', selected.channel>0 ? 1 : drumgroup_is_present ? 0 : 1);
 			mod.Send( 'cntrlr_encoder_grid', 'local', 1);
 			mod.Send( 'code_encoder_grid', 'local', 1);
-			
+
 			/*var i=7;do{
 				params[Encoders[i]].hidden = 0;
 				params[Speeds[i]].hidden = 1;
@@ -3312,13 +3351,13 @@ function update_bank()
 			}while(i--);
 			break;
 	}
-	rotgate.message('int', ((pad_mode==5)||(key_mode==5)||(grid_mode==1)||(grid_mode==2)||(grid_mode==3)||(grid_mode==4))); 
+	rotgate.message('int', ((pad_mode==5)||(key_mode==5)||(grid_mode==1)||(grid_mode==2)||(grid_mode==3)||(grid_mode==4)));
 }
 
 //open the floating editor, called from MonomodComponent
 function pop(val)
 {
-	post('pop', val, '\n');
+	debug('pop', val);
 	switch(val)
 	{
 		case 0:
@@ -3334,8 +3373,9 @@ function pop(val)
 			parent.window('flags', 'float');
 			parent.window('exec');
 			break;
-	}		
+	}
 }
+
 function pop(){}
 
 /*///////////////////////////
@@ -3358,6 +3398,16 @@ Warning = ['missing', 'device', 'assignment', 'for', 'the', 'currently', 'select
 // called from init
 function init_device()
 {
+	mod.Send('receive_device', 'set_mod_device_type', 'Hex');
+	mod.Send( 'receive_device', 'set_number_params', 16);
+	for(var dev_type in HEX_BANKS)
+	{
+		for(var bank_num in HEX_BANKS[dev_type])
+		{
+			mod.SendDirect('receive_device_proxy', 'set_bank_dict_entry', dev_type, bank_num, HEX_BANKS[dev_type][bank_num]);
+		}
+		//mod.Send('receive_device_proxy', 'update_parameters');
+	}
 	finder = new LiveAPI(callback, 'this_device');
 	pns['device_name']=this.patcher.getnamed('device_name');
 	for(var i=0;i<12;i++)
@@ -3410,7 +3460,7 @@ function detect_drumrack()
 				drumgroup_is_present = true;
 				debug("DrumRack found");
 				devices[0] = parseInt(finder.id);
-				//if(DEBUG){post('DrumRack found', devices[0], '\n');}
+				//debug('DrumRack found', devices[0]);
 				break;
 			}
 		}
@@ -3431,20 +3481,20 @@ function detect_drumrack()
 function set_devices()
 {
 	var ids = arrayfromargs(arguments);
-	debug('set_devices', ids, '\n');
+	debug('set_devices', ids);
 	devices = ids;
 }
 
 //find the appointed_device
 function detect_device(channel)
 {
-	debug('select_device \n');
+	debug('select_device');
 	finder.goto('live_set', 'appointed_device');
-	debug('device id ==', finder.id, '\n');
+	debug('device id ==', finder.id);
 	if(check_device_id(parseInt(finder.id), channel)>0)
 	{
 		_select_chain(selected.num);
-	}	
+	}
 	//this.patcher.getnamed('devices').wclose();
 }
 
@@ -3452,7 +3502,7 @@ function detect_device(channel)
 function check_device_id(id, channel)
 {
 	var found = 0;
-	debug('device_id', id, '\n');
+	debug('device_id', id);
 	if(id>0)
 	{
 		if(channel == 0)
@@ -3491,7 +3541,7 @@ function check_device_id(id, channel)
 //send the current chain assignment to mod.js
 function _select_chain(chain_num)
 {
-	debug('select_chain', chain_num, selected.channel, devices[selected.channel], '\n');
+	debug('select_chain', chain_num, selected.channel, devices[selected.channel]);
 	if((selected.channel==0)&&(drumgroup_is_present))
 	{
 		//mod.Send( 'set_device_parent', devices[selected.channel]);
@@ -3517,8 +3567,8 @@ function _select_chain(chain_num)
 //sort calls to the internal LCD
 function _lcd(obj, type, val)
 {
-	//post('new_lcd', obj, type, val, '\n');
-	debuglcd('lcd', obj, type, val, '\n');
+	//debug('new_lcd', obj, type, val);
+	debuglcd('lcd', obj, type, val);
 	if((type=='lcd_name')&&(val!=undefined))
 	{
 		if(pns[obj])
@@ -3545,7 +3595,7 @@ function _lcd(obj, type, val)
 //distribute gui knobs to their destinations
 function _encoder(num, val)
 {
-	debug('encoder in', num, val, '\n');
+	debug('encoder in', num, val);
 	if(num<12)
 	{
 		mod.Send( 'receive_device', 'set_mod_parameter_value', num, val);
@@ -3568,7 +3618,7 @@ function _encoder(num, val)
 				//selected.swing = (val+50)/100;
 				//selected.obj.swing.message('float', selected.swing);
 				selected.obj.set.swing((val+50)/100);
-				post('swing val', val, '\n');
+				//debug('swing val', val);
 				break;
 			case 14:
 				//selected.random = val;
@@ -3606,13 +3656,13 @@ function _encoder(num, val)
 				script['Speed'+(selected.num+1)].message('int', val);
 				break;
 		}
-	}	 
+	}
 }
 
 //called from invisible ui controls that the MonoDeviceComponent latches to in 2nd/3rd bank indexes
 function _speed(num, val)
 {
-	debug('speed', num, val, '\n');
+	debug('speed', num, val);
 	var new_time = 8, Part = part[num];
 	if(TIMES[val])
 	{
@@ -3630,10 +3680,23 @@ function _speed(num, val)
 	Part.obj.nexttime.message('bang');
 }
 
+function _freeSpeed(val)
+{
+	debug('_freeSpeed:', val);
+	selected.obj.set.freespeed(val);
+}
+
+function _quant_enable(val)
+{
+	debug('_quant_enable:', val);
+	selected.obj.set.quantize(val);
+
+}
+
 //called from visible ui elements and distributed to MonoDeviceComponent in 2nd/3rd bank indexes
 function set_speed(num, val)
 {
-	debug('set_speed', num, val, '\n');
+	debug('set_speed', num, val);
 	script['Speed'+(num+1)].message('set', val);
 	_speed(num, val);
 }
