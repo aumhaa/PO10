@@ -1442,8 +1442,8 @@ class PO10ModHandler(ModHandler):
 
 
 	def _receive_po10_grid(self, x, y, value = -1, *a, **k):
-		debug('_receive_po10_grid:', x, y, value)
-		if self.is_enabled() and self._active_mod and not self._active_mod.legacy and not self._po10_grid is None and x < 4 and y < 4:
+		debug('_receive_po10_grid:', x, y, value, self.is_enabled(), not self._active_mod is None, not self._active_mod.legacy, not self._po10_grid is None)
+		if self.is_enabled() and not self._active_mod is None and not self._active_mod.legacy and not self._po10_grid is None and x < 4 and y < 4:
 			value > -1 and self._po10_grid.send_value(x, y, self._colors[value], True)
 
 

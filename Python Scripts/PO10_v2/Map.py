@@ -7,7 +7,7 @@ Created by amounra on 2015-06-26.
 Copyright (c) 2010 __aumhaa__. All rights reserved.
 http://www.aumhaa.com
 
-This file allows the reassignment of the controls from their default arrangement.  The order is from left to right; 
+This file allows the reassignment of the controls from their default arrangement.  The order is from left to right;
 Buttons are Note #'s and Faders/Rotaries are Controller #'s
 """
 
@@ -35,8 +35,10 @@ FOLLOW = True		#this sets whether or not the last selected device on a track is 
 
 COLOR_MAP = [127, 127, 127, 127, 127, 127, 127]
 
-from _Framework.ButtonElement import Color
-from _Mono_Framework.LividColors import *
+#from _Framework.ButtonElement import Color
+from ableton.v2.control_surface.elements.color import Color
+#from _Mono_Framework.LividColors import *
+from aumhaa.v2.livid.colors import *
 
 class PO10Colors:
 
@@ -50,14 +52,14 @@ class PO10Colors:
 		TranslationsDisabled = LividRGB.MAGENTA
 		DeviceSelector = LividRGB.BlinkMedium.YELLOW
 		DeviceSelectorDisabled = LividRGB.YELLOW
-	
+
 
 	class DefaultButton:
 		On = LividRGB.WHITE
 		Off = LividRGB.OFF
 		Disabled = LividRGB.OFF
 		Alert = LividRGB.BlinkFast.WHITE
-	
+
 
 	class Session:
 		StopClipTriggered = LividRGB.BlinkFast.BLUE
@@ -75,31 +77,31 @@ class PO10Colors:
 		NavigationButtonOff = LividRGB.YELLOW
 		ZoomOn = LividRGB.BlinkFast.WHITE
 		ZoomOff = LividRGB.WHITE
-	
+
 
 	class Zooming:
 		Selected = LividRGB.BlinkFast.YELLOW
 		Stopped = LividRGB.WHITE
 		Playing = LividRGB.GREEN
 		Empty = LividRGB.OFF
-	
+
 
 	class NoteEditor:
 
 		class Step:
 			Low = LividRGB.CYAN
-			High = LividRGB.WHITE 
+			High = LividRGB.WHITE
 			Full = LividRGB.YELLOW
 			Muted = LividRGB.YELLOW
 			StepEmpty = LividRGB.OFF
-		
+
 
 		class StepEditing:
 			High = LividRGB.GREEN
 			Low = LividRGB.CYAN
 			Full = LividRGB.YELLOW
 			Muted = LividRGB.WHITE
-		
+
 
 		StepEmpty = LividRGB.OFF
 		StepEmptyBase = LividRGB.OFF
@@ -110,7 +112,7 @@ class PO10Colors:
 		StepSelected = LividRGB.GREEN
 		QuantizationSelected = LividRGB.RED
 		QuantizationUnselected = LividRGB.MAGENTA
-	
+
 
 	class LoopSelector:
 		Playhead = LividRGB.YELLOW
@@ -119,7 +121,7 @@ class PO10Colors:
 		SelectedPage = LividRGB.WHITE
 		InsideLoop = LividRGB.CYAN
 		PlayheadRecord = LividRGB.RED
-	
+
 
 	class DrumGroup:
 		PadAction = LividRGB.WHITE
@@ -133,7 +135,7 @@ class PO10Colors:
 		PadSoloedSelected = LividRGB.BLUE
 		PadInvisible = LividRGB.OFF
 		PadAction = LividRGB.RED
-	
+
 
 	class Transport:
 		PlayOn = LividRGB.BlinkMedium.GREEN
@@ -142,8 +144,8 @@ class PO10Colors:
 		RecordOn = LividRGB.BlinkMedium.RED
 		RecordOff = LividRGB.RED
 		OverdubOn = LividRGB.BlinkFast.RED
-		OverdubOff = LividRGB.RED	
-	
+		OverdubOff = LividRGB.RED
+
 
 	class Mixer:
 		SoloOn = LividRGB.CYAN
@@ -157,11 +159,11 @@ class PO10Colors:
 		StopClip = LividRGB.WHITE
 		SelectedOn = LividRGB.BLUE
 		SelectedOff = LividRGB.OFF
-	
+
 
 	class Recording:
 		Transition = LividRGB.BlinkFast.MAGENTA
-	
+
 
 	class Recorder:
 		On = LividRGB.WHITE
@@ -176,14 +178,14 @@ class PO10Colors:
 		AutomationOff = LividRGB.CYAN
 		FixedAssigned = LividRGB.MAGENTA
 		FixedNotAssigned = LividRGB.OFF
-	
+
 
 	class Sequencer:
 		OctaveOn = LividRGB.BlinkFast.CYAN
 		OctaveOff = LividRGB.OFF
 		On = LividRGB.WHITE
 		Off = LividRGB.OFF
-	
+
 
 	class Device:
 		NavOn = LividRGB.MAGENTA
@@ -194,22 +196,22 @@ class PO10Colors:
 		ChainNavOff = LividRGB.OFF
 		ContainNavOn = LividRGB.CYAN
 		ContainNavOff = LividRGB.OFF
-	
+
 
 	class DeviceSelector:
 		AssignOn = LividRGB.BlinkFast.YELLOW
 		AssignOff = LividRGB.YELLOW
-	
+
 
 	class Mod:
-		
+
 		AltOn = LividRGB.BlinkFast.BLUE
 		AltOff = LividRGB.BLUE
 		class Nav:
 			OnValue = LividRGB.RED
 			OffValue = LividRGB.WHITE
-		
-	
+
+
 
 	class MonoInstrument:
 
@@ -229,14 +231,14 @@ class PO10Colors:
 			RootBlackValue = LividRGB.MAGENTA
 			WhiteValue = LividRGB.CYAN
 			BlackValue = LividRGB.BLUE
-		
+
 
 		class Drums:
 			SelectedNote = LividRGB.BLUE
 			EvenValue = LividRGB.GREEN
 			OddValue = LividRGB.MAGENTA
-		
-	
+
+
 
 	class Translation:
 
@@ -290,7 +292,7 @@ class PO10Colors:
 			Button_29 = LividRGB.OFF
 			Button_30 = LividRGB.OFF
 			Button_31 = LividRGB.OFF
-		
+
 
 		class Channel_5:
 			Grid_0 = LividRGB.OFF
@@ -342,7 +344,7 @@ class PO10Colors:
 			Button_29 = LividRGB.OFF
 			Button_30 = LividRGB.OFF
 			Button_31 = LividRGB.OFF
-		
+
 
 		class Channel_6:
 			Grid_0 = LividRGB.OFF
@@ -394,7 +396,7 @@ class PO10Colors:
 			Button_29 = LividRGB.OFF
 			Button_30 = LividRGB.OFF
 			Button_31 = LividRGB.OFF
-		
+
 
 		class Channel_7:
 			Grid_0 = LividRGB.OFF
@@ -446,7 +448,7 @@ class PO10Colors:
 			Button_29 = LividRGB.OFF
 			Button_30 = LividRGB.OFF
 			Button_31 = LividRGB.OFF
-		
+
 
 		class Channel_8:
 			Grid_0 = LividRGB.OFF
@@ -498,7 +500,7 @@ class PO10Colors:
 			Button_29 = LividRGB.OFF
 			Button_30 = LividRGB.OFF
 			Button_31 = LividRGB.OFF
-		
+
 
 		class Channel_9:
 			Grid_0 = LividRGB.OFF
@@ -550,7 +552,7 @@ class PO10Colors:
 			Button_29 = LividRGB.OFF
 			Button_30 = LividRGB.OFF
 			Button_31 = LividRGB.OFF
-		
+
 
 		class Channel_10:
 			Grid_0 = LividRGB.OFF
@@ -602,7 +604,7 @@ class PO10Colors:
 			Button_29 = LividRGB.OFF
 			Button_30 = LividRGB.OFF
 			Button_31 = LividRGB.OFF
-		
+
 
 		class Channel_11:
 			Grid_0 = LividRGB.OFF
@@ -654,9 +656,8 @@ class PO10Colors:
 			Button_29 = LividRGB.OFF
 			Button_30 = LividRGB.OFF
 			Button_31 = LividRGB.OFF
-		
 
-	
+
+
 
 ## a  http://www.aumhaa.com
-
