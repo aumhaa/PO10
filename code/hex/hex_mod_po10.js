@@ -36,7 +36,7 @@ var DEBUG_REC = false;
 var DEBUG_LOCK = false;
 var DEBUGANYTHING = false;
 var DEBUGSETTER = false;
-var SHOW_POLYSELECTOR = true;
+var SHOW_POLYSELECTOR = false;
 var SHOW_STORAGE = false;
 
 
