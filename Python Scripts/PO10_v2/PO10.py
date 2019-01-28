@@ -1084,8 +1084,8 @@ class PO10(LividControlSurface):
 
 		self._matrix = ButtonMatrixElement(name = 'Matrix', rows = [self._grid[index*4:(index*4)+4] for index in range(4)])
 		self._key_matrix = ButtonMatrixElement(name = 'Key_Matrix', rows = [self._key[0:16], self._key[16:32]])
-		self._encoder_matrix = ButtonMatrixElement(name = 'Encoder_Matrix', rows = [self._encoder[0:4], self._encoder[4:8]])
-		self._encoder_button_matrix = ButtonMatrixElement(name = 'Encoder_Button_Matrix', rows = [self._encoder_button[0:4], self._encoder_button[4:8]])
+		#self._encoder_matrix = ButtonMatrixElement(name = 'Encoder_Matrix', rows = [self._encoder[0:8]])  #], self._encoder[4:8]])
+		#self._encoder_button_matrix = ButtonMatrixElement(name = 'Encoder_Button_Matrix', rows = [self._encoder_button[0:8]]) #, self._encoder_button[4:8]])
 		self._main_encoder_matrix = ButtonMatrixElement(name = 'Main_Encoder_Matrix', rows = [self._encoder[8:13]])
 		self._device_encoder_matrix = ButtonMatrixElement(name = 'Device_Encoder_Matrix', rows = [self._encoder[:8]])
 		self._send_encoder_feedback_matrix = ButtonMatrixElement(name = 'Send_Encoder_Feedback_Matrix', rows = [self._encoder_feedback])
@@ -1130,7 +1130,8 @@ class PO10(LividControlSurface):
 
 
 	def _setup_device_control(self):
-		self._device = PO10DeviceComponent(device_provider = SimpleDeviceProvider(), device_bank_registry = DeviceBankRegistry())
+		#self._device = PO10DeviceComponent(device_provider = SimpleDeviceProvider(), device_bank_registry = DeviceBankRegistry())
+		self._device = PO10DeviceComponent(device_provider = self._device_provider, device_bank_registry = DeviceBankRegistry())
 		self._device.layer = Layer(priority = 6, parameter_controls = self._device_encoder_matrix,
 											parameter_buttons = self._device_encoder_button_matrix,
 											send_controls = self._send_encoder_matrix,
@@ -1442,13 +1443,13 @@ class PO10ModHandler(ModHandler):
 
 
 	def _receive_po10_grid(self, x, y, value = -1, *a, **k):
-		debug('_receive_po10_grid:', x, y, value, self.is_enabled(), not self._active_mod is None, not self._active_mod.legacy, not self._po10_grid is None)
+		#debug('_receive_po10_grid:', x, y, value, self.is_enabled(), not self._active_mod is None, not self._active_mod.legacy, not self._po10_grid is None)
 		if self.is_enabled() and not self._active_mod is None and not self._active_mod.legacy and not self._po10_grid is None and x < 4 and y < 4:
 			value > -1 and self._po10_grid.send_value(x, y, self._colors[value], True)
 
 
 	def _receive_po10_encoder_grid(self, x, y, value = -1, mode = None, green = None, custom = None, local = None, relative = None, *a, **K):
-		debug('_receive_po10_encoder_grid:', x, y, value, mode, green, custom, local, relative)
+		#debug('_receive_po10_encoder_grid:', x, y, value, mode, green, custom, local, relative)
 		if self.is_enabled() and self._active_mod and self._po10_encoder_grid and x < 4 and y < 2:
 			if value > -1:
 				if self._local:
@@ -1471,13 +1472,13 @@ class PO10ModHandler(ModHandler):
 
 
 	def _receive_po10_encoder_grid_relative(self, value, *a):
-		debug('_receive_po10_encoder_grid_relative:', value)
+		#debug('_receive_po10_encoder_grid_relative:', value)
 		if self.is_enabled() and self._active_mod:
 			value and self._script._send_midi(tuple([240, 0, 1, 97, 8, 17, 127, 127, 127, 127, 247])) or self._script._send_midi(tuple([240, 0, 1, 97, 8, 17, 15, 0, 0, 0, 247]))
 
 
 	def _receive_po10_encoder_grid_local(self, value, *a):
-		debug('_receive_po10_encoder_grid_local:', value)
+		#debug('_receive_po10_encoder_grid_local:', value)
 		if self.is_enabled() and self._active_mod:
 			self.clear_rings()
 			self._local = value
@@ -1485,14 +1486,14 @@ class PO10ModHandler(ModHandler):
 
 
 	def _receive_po10_key(self, x, y=0, value=0, *a):
-		debug('_receive_po10_key:', x, y, value)
+		#debug('_receive_po10_key:', x, y, value)
 		if self.is_enabled() and self._active_mod and not self._active_mod.legacy:
 			if not self._po10_keys is None:
 				self._po10_keys.send_value(x, y, self._colors[value], True)
 
 
 	def _receive_grid(self, x, y, value = -1, *a, **k):
-		debug('_receive_po10_grid:', x, y, value)
+		#debug('_receive_po10_grid:', x, y, value)
 		if self.is_enabled() and self._active_mod and self._active_mod.legacy:
 			if not self._po10_grid is None:
 				if (x - self.x_offset) in range(4) and (y - self.y_offset) in range(4):
