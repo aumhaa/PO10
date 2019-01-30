@@ -1530,6 +1530,15 @@ class LegacyModDeviceProxy(ModDeviceProxy):
 							if device.canonical_parent.mixer_device.sends != None:
 								if len(device.canonical_parent.mixer_device.sends)>send_index:
 									result = device.canonical_parent.mixer_device.sends[send_index]
+				elif(match('Mod_Chain_Return_', name)):
+					#debug('match Mod_Chain_Send_')
+					return_index = int(name.replace('Mod_Chain_Return_', ''))
+					if device.canonical_parent != None:
+						if device.canonical_parent.canonical_parent != None:
+							if device.canonical_parent.canonical_parent.return_chains != None:
+								if len(device.canonical_parent.canonical_parent.return_chains)>return_index:
+									if device.canonical_parent.canonical_parent.return_chains[return_index].mixer_device != None:
+										result = device.canonical_parent.canonical_parent.return_chains[return_index].mixer_device.volume
 		if result == None:
 			#debug('checking for ModDevice...')
 			if match('ModDevice_', name) and self._mod_device != None:
