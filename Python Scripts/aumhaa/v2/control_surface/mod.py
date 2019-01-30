@@ -1510,34 +1510,34 @@ class LegacyModDeviceProxy(ModDeviceProxy):
 		result = None
 		if device:
 			for i in device.parameters:
-				if (i.original_name == name):
+				if (i.original_name == name) or (i.name.split(' ')[0]==name):
 					result = i
 					break
 			if result == None:
 				if name == 'Mod_Chain_Pan':
-					if device.canonical_parent.mixer_device != None:
-						if device.canonical_parent.mixer_device.panning != None:
+					if liveobj_valid(device.canonical_parent.mixer_device):
+						if liveobj_valid(device.canonical_parent.mixer_device.panning):
 							result = device.canonical_parent.mixer_device.panning
 				elif name == 'Mod_Chain_Vol':
-					if device.canonical_parent.mixer_device !=None:
-						if device.canonical_parent.mixer_device.panning != None:
+					if liveobj_valid(device.canonical_parent.mixer_device):
+						if liveobj_valid(device.canonical_parent.mixer_device.panning):
 							result = device.canonical_parent.mixer_device.volume
 				elif(match('Mod_Chain_Send_', name)):
 					#debug('match Mod_Chain_Send_')
 					send_index = int(name.replace('Mod_Chain_Send_', ''))
-					if device.canonical_parent != None:
-						if device.canonical_parent.mixer_device != None:
-							if device.canonical_parent.mixer_device.sends != None:
+					if liveobj_valid(device.canonical_parent):
+						if liveobj_valid(device.canonical_parent.mixer_device):
+							if liveobj_valid(device.canonical_parent.mixer_device.sends):
 								if len(device.canonical_parent.mixer_device.sends)>send_index:
 									result = device.canonical_parent.mixer_device.sends[send_index]
 				elif(match('Mod_Chain_Return_', name)):
 					#debug('match Mod_Chain_Send_')
 					return_index = int(name.replace('Mod_Chain_Return_', ''))
-					if device.canonical_parent != None:
-						if device.canonical_parent.canonical_parent != None:
-							if device.canonical_parent.canonical_parent.return_chains != None:
+					if liveobj_valid(device.canonical_parent):
+						if liveobj_valid(device.canonical_parent.canonical_parent):
+							if liveobj_valid(device.canonical_parent.canonical_parent.return_chains):
 								if len(device.canonical_parent.canonical_parent.return_chains)>return_index:
-									if device.canonical_parent.canonical_parent.return_chains[return_index].mixer_device != None:
+									if liveobj_valid(device.canonical_parent.canonical_parent.return_chains[return_index].mixer_device):
 										result = device.canonical_parent.canonical_parent.return_chains[return_index].mixer_device.volume
 		if result == None:
 			#debug('checking for ModDevice...')
