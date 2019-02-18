@@ -114,33 +114,20 @@ var Objs = {'pattern':{'Name':'pattern', 'Type':'list', 'pattr':'pattern'},
 
 var HEX_SPEED_1 = ['ModDevice_Speed1', 'ModDevice_Speed2', 'ModDevice_Speed3', 'ModDevice_Speed4', 'ModDevice_Speed5', 'ModDevice_Speed6', 'ModDevice_Speed7', 'ModDevice_Speed8', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3']
 var HEX_SPEED_2 = ['ModDevice_Speed9', 'ModDevice_Speed10', 'ModDevice_Speed11', 'ModDevice_Speed12', 'ModDevice_Speed13', 'ModDevice_Speed14', 'ModDevice_Speed15', 'ModDevice_Speed16', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3']
-/*var HEX_BANKS = {'InstrumentGroupDevice':[['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'Macro 5', 'ModDevice_Multiplier', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'DrumGroupDevice':[['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'Macro 5', 'ModDevice_Multiplier', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'MidiEffectGroupDevice':[['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'Macro 5', 'ModDevice_Multiplier', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'Other':[['None', 'None', 'None', 'None', 'None', 'ModDevice_Multiplier', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['None', 'None', 'None', 'None', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'Operator':[['Osc-A Level', 'Osc-B Level', 'Osc-C Level', 'Osc-D Level', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime','Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Osc-A Level', 'Osc-B Level', 'Osc-C Level', 'Osc-D Level', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'UltraAnalog':[['AEG1 Attack', 'AEG1 Decay', 'AEG1 Sustain', 'AEG1 Rel', 'OSC1 Semi', 'ModDevice_Multiplier', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['AEG1 Attack', 'AEG1 Decay', 'AEG1 Sustain', 'AEG1 Rel', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'OriginalSimpler':[['Ve Attack', 'Ve Decay', 'Ve Sustain', 'Ve Release', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Ve Attack', 'Ve Decay', 'Ve Sustain', 'Ve Release', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'MultiSampler':[['Ve Attack', 'Ve Decay', 'Ve Sustain', 'Ve Release', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Ve Attack', 'Ve Decay', 'Ve Sustain', 'Ve Release', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'LoungeLizard':[['M Force', 'F Release', 'F Tone Decay', 'F Tone Vol', 'Semitone', 'ModDevice_Multiplier', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['M Force', 'F Release', 'F Tone Decay', 'F Tone Vol', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'StringStudio':[['E Pos', 'Exc ForceMassProt', 'Exc FricStiff', 'Exc Velocity', 'Semitone', 'ModDevice_Multiplier', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['E Pos', 'Exc ForceMassProt', 'Exc FricStiff', 'Exc Velocity', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'Collision':[['Noise Attack', 'Noise Decay', 'Noise Sustain', 'Noise Release', 'Res 1 Tune', 'ModDevice_Multiplier', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Noise Attack', 'Noise Decay', 'Noise Sustain', 'Noise Release', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'InstrumentImpulse':[['1 Start', '1 Envelope Decay', '1 Stretch Factor', 'Global Time', 'Global Transpose', 'ModDevice_Multiplier', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime','Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['1 Start', '1 Envelope Decay', '1 Stretch Factor', 'Global Time', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'NoDevice':[['None', 'None', 'None', 'None', 'None', 'None', 'None', 'None', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime','Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['None', 'None', 'None', 'None', 'None', 'None', 'None', 'None', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2]}*/
 
-var HEX_BANKS = {'InstrumentGroupDevice':[['Mod_Chain_Return_0', 'ModDevice_Speed', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'Mod_Chain_Vol', 'Filter', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'DrumGroupDevice':[['Mod_Chain_Return_0', 'ModDevice_Speed', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'Mod_Chain_Vol', 'Filter', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'MidiEffectGroupDevice':[['Mod_Chain_Return_0', 'ModDevice_Speed', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'Mod_Chain_Vol', 'Filter', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'Other':[['Mod_Chain_Return_0', 'ModDevice_Speed', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'Mod_Chain_Vol', 'Filter', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['None', 'None', 'None', 'None', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'Operator':[['Mod_Chain_Return_0', 'ModDevice_Speed', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'Mod_Chain_Vol', 'Filter Freq', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime','Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Osc-A Level', 'Osc-B Level', 'Osc-C Level', 'Osc-D Level', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'UltraAnalog':[['Mod_Chain_Return_0', 'ModDevice_Speed', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'Mod_Chain_Vol', 'F1 Freq', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['AEG1 Attack', 'AEG1 Decay', 'AEG1 Sustain', 'AEG1 Rel', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'OriginalSimpler':[['Mod_Chain_Return_0', 'ModDevice_Speed', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'Mod_Chain_Vol', 'Filter Freq', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Ve Attack', 'Ve Decay', 'Ve Sustain', 'Ve Release', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'MultiSampler':[['Mod_Chain_Return_0', 'ModDevice_Speed', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'Mod_Chain_Vol', 'Filter Freq', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Ve Attack', 'Ve Decay', 'Ve Sustain', 'Ve Release', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'LoungeLizard':[['Mod_Chain_Return_0', 'ModDevice_Speed', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'Mod_Chain_Vol', 'P Distance', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['M Force', 'F Release', 'F Tone Decay', 'F Tone Vol', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'StringStudio':[['Mod_Chain_Return_0', 'ModDevice_Speed', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'Mod_Chain_Vol', 'Semitone', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['E Pos', 'Exc ForceMassProt', 'Exc FricStiff', 'Exc Velocity', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'Collision':[['Mod_Chain_Return_0', 'ModDevice_Speed', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'Mod_Chain_Vol', 'Res 1 Tune', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Noise Attack', 'Noise Decay', 'Noise Sustain', 'Noise Release', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'InstrumentImpulse':[['Mod_Chain_Return_0', 'ModDevice_Speed', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'Mod_Chain_Vol', '1 Filter Freq', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime','Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['1 Start', '1 Envelope Decay', '1 Stretch Factor', 'Global Time', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
-			'NoDevice':[['Mod_Chain_Return_0', 'ModDevice_Speed', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'Mod_Chain_Vol', 'None', 'None', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime','Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['None', 'None', 'None', 'None', 'None', 'None', 'None', 'None', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2]}
+var HEX_BANKS = {'InstrumentGroupDevice':[['ModDevice_Speed', 'Mod_Chain_Return_0', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'ModDevice_moddial', 'Filter', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'DrumGroupDevice':[['ModDevice_Speed', 'Mod_Chain_Return_0', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'ModDevice_moddial', 'Filter', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'MidiEffectGroupDevice':[['ModDevice_Speed', 'Mod_Chain_Return_0', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'ModDevice_moddial', 'Filter', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Macro 1', 'Macro 2', 'Macro 3', 'Macro 4', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'Other':[['ModDevice_Speed', 'Mod_Chain_Return_0', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'ModDevice_moddial', 'Filter', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['None', 'None', 'None', 'None', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'Operator':[['ModDevice_Speed', 'Mod_Chain_Return_0', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'ModDevice_moddial', 'Filter Freq', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime','Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Osc-A Level', 'Osc-B Level', 'Osc-C Level', 'Osc-D Level', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'UltraAnalog':[['ModDevice_Speed', 'Mod_Chain_Return_0', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'ModDevice_moddial', 'F1 Freq', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['AEG1 Attack', 'AEG1 Decay', 'AEG1 Sustain', 'AEG1 Rel', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'OriginalSimpler':[['ModDevice_Speed', 'Mod_Chain_Return_0', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'ModDevice_moddial', 'Filter Freq', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Ve Attack', 'Ve Decay', 'Ve Sustain', 'Ve Release', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'MultiSampler':[['ModDevice_Speed', 'Mod_Chain_Return_0', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'ModDevice_moddial', 'Filter Freq', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Ve Attack', 'Ve Decay', 'Ve Sustain', 'Ve Release', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'LoungeLizard':[['ModDevice_Speed', 'Mod_Chain_Return_0', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'ModDevice_moddial', 'P Distance', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['M Force', 'F Release', 'F Tone Decay', 'F Tone Vol', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'StringStudio':[['ModDevice_Speed', 'Mod_Chain_Return_0', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'ModDevice_moddial', 'Semitone', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['E Pos', 'Exc ForceMassProt', 'Exc FricStiff', 'Exc Velocity', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'Collision':[['ModDevice_Speed', 'Mod_Chain_Return_0', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'ModDevice_moddial', 'Res 1 Tune', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['Noise Attack', 'Noise Decay', 'Noise Sustain', 'Noise Release', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'InstrumentImpulse':[['ModDevice_Speed', 'Mod_Chain_Return_0', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2',  'ModDevice_moddial', '1 Filter Freq', 'Transpose', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime','Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['1 Start', '1 Envelope Decay', '1 Stretch Factor', 'Global Time', 'ModDevice_PolyOffset', 'ModDevice_Mode', 'ModDevice_Speed', 'Mod_Chain_Vol', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2],
+			'NoDevice':[['ModDevice_Speed', 'Mod_Chain_Return_0', 'Mod_Chain_Return_1', 'Mod_Chain_Return_2', 'ModDevice_moddial', 'None', 'None', 'ModDevice_Multiplier', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime','Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], ['None', 'None', 'None', 'None', 'None', 'None', 'None', 'None', 'ModDevice_Channel', 'ModDevice_Groove', 'ModDevice_Random', 'ModDevice_BaseTime', 'Mod_Chain_Send_0', 'Mod_Chain_Send_1', 'Mod_Chain_Send_2', 'Mod_Chain_Send_3'], HEX_SPEED_1, HEX_SPEED_2]}
 
 
 var Modes=[4, 2, 3, 5, 1];
@@ -334,7 +321,7 @@ function initialize(val)
 			part[i] = {'n': 'part', 'num':i, 'nudge':0, 'offset':0, 'channel':0, 'len':16, 'start':0,
 						'jitter':0, 'active':1, 'swing':.5, 'lock':1, 'ticks':480, 'notevalues':3, 'notetype':0,
 						'pushed':0, 'direction':0, 'noteoffset':i, 'root':i, 'octave':0, 'add':0, 'quantize':1, 'repeat':6, 'clutch':1,
-						'random':0, 'note':i, 'steps':11, 'mode':0, 'polyenable':0, 'polyoffset':36, 'mode':0,
+						'random':0, 'note':i, 'steps':11, 'mode':0, 'polyenable':0, 'polyoffset':36, 'mode':0, 'multiplier':1,
 						'hold':0, 'held':[], 'triggered':[], 'recdirty':0, 'timedivisor':16, 'basetime':1, 'behavior_enable':1};//'speed':480,'notevalue':'4n'
 			part[i].num = parseInt(i);
 			part[i].pattern = default_pattern.slice();
@@ -571,6 +558,7 @@ function init_poly()
 		part[i].obj.notevalues.message('int', part[i].notevalues);
 		part[i].obj.channel.message('int', part[i].channel);
 		part[i].obj.behavior_enable.message('int', part[i].behavior_enable);
+		part[i].obj.multiplier.message('float', part[i].multiplier)
 		//update_note_pattr(part[i]);
 
 	}
@@ -940,6 +928,7 @@ function refresh_extras()
 }
 
 function grid_out(){}
+
 function base_grid_out(){}
 
 /*/////////////////////////////////
@@ -1033,6 +1022,7 @@ function anything()
 }
 
 var _po10_encoder_button_grid = _c_button;
+
 function _c_button(x, y, val)
 {
 	debug('button_in', x, y, val);
@@ -3321,6 +3311,7 @@ function update_gui()
 	BaseTime.message('set', selected.obj.basetime.getvalueof());
 	PolyOffset.message('set', selected.obj.polyoffset.getvalueof());
 	Speed.message('set', script['Speed'+(selected.num+1)].getvalueof());
+	Multiplier.message('set', selected.obj.multiplier.getvalueof());
 	if((pad_mode == 6)||(key_mode == 6))
 	{
 		//mod.Send( 'c_button', 3, 2, selected.hold);
@@ -3679,7 +3670,7 @@ function _encoder(num, val)
 //called from invisible ui controls that the MonoDeviceComponent latches to in 2nd/3rd bank indexes
 function _speed(num, val)
 {
-	debug('speed', num, val);
+	//debug('speed', num, val);
 	var new_time = 8, Part = part[num];
 	if(TIMES[val])
 	{
@@ -3713,7 +3704,7 @@ function _quant_enable(val)
 //called from visible ui elements and distributed to MonoDeviceComponent in 2nd/3rd bank indexes
 function set_speed(num, val)
 {
-	debug('set_speed', num, val);
+	//debug('set_speed', num, val);
 	script['Speed'+(num+1)].message('set', val);
 	_speed(num, val);
 }
@@ -3745,6 +3736,8 @@ function _reset_params_to_default()
 {
 	debug('_reset_params_to_default');
 	mod.Send( 'send_explicit', 'receive_device', 'set_all_params_to_defaults' );
+	reset_speeds();
+	reset_multipliers();
 }
 
 function reset_sequence()
@@ -3752,6 +3745,9 @@ function reset_sequence()
 	debug('mod reset_sequence()');
 	this.patcher.getnamed('moddial').message('int', 0);
 	refresh_c_keys();
+	_reset_params_to_default();
+	recall_base_pattern();
+	this.patcher.getnamed('moddial').message('int', 127);
 }
 
 function recall_base_pattern()
@@ -3762,6 +3758,23 @@ function recall_base_pattern()
 function _moddial_change(val)
 {
 	refresh_c_keys();
+}
+
+function reset_speeds()
+{
+	for(var i=0;i<16;i++)
+	{
+		set_speed(i, 4);
+	}
+}
+
+function reset_multipliers()
+{
+	for(var i=0;i<16;i++)
+	{
+		part[i].multiplier = 1;
+		part[i].obj.multiplier.message('float', 1);
+	}
 }
 
 forceload(this);

@@ -22,7 +22,7 @@ var debug = (DEBUG&&Debug) ? Debug : function(){};
 var FORCELOAD = false;
 var forceload = (FORCELOAD&&Forceload) ? Forceload : function(){};
 
-function endsWith(str, suffix) 
+function endsWith(str, suffix)
 {
 	return str.indexOf(suffix, str.length - suffix.length) !== -1;
 }
@@ -80,7 +80,10 @@ function scene_fire_callback(args)
 	debug('scene_fire_callback', args);
 	if((args[0]=='value')&&(args[1]>0))
 	{
-		var scene_index = scene_offset.call('scene_offset');
+		//var scene_index = scene_offset.call('scene_offset');
+		var scene_index = scene_offset.get('scene_offset');
+		debug('scene_offset:', scene_index);
+
 		scenes.goto('scenes', scene_index);
 		var name = scenes.get('name')[0];
 		if(endsWith(name, '@HK'))

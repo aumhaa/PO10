@@ -34,7 +34,7 @@ from aumhaa.v2.control_surface.elements.mono_bridge import MonoBridgeElement
 from aumhaa.v2.control_surface.elements.mono_button import MonoButtonElement
 from aumhaa.v2.control_surface.components.reset_sends import ResetSendsComponent
 from aumhaa.v2.control_surface.components.device_selector import DeviceSelectorComponent
-from aumhaa.v2.control_surface.mono_modes import CancellableBehaviour, CancellableBehaviourWithRelease
+from aumhaa.v2.control_surface.mono_modes import CancellableBehaviour, CancellableBehaviourWithRelease, ColoredCancellableBehaviourWithRelease
 from aumhaa.v2.base.debug import *
 from aumhaa.v2.control_surface.mod import *
 from aumhaa.v2.livid.colors import *
@@ -58,17 +58,17 @@ NORMALENCODER = (240, 0, 1, 97, 8, 30, 00, 00, 247)
 FASTENCODER = (240, 0, 1, 97, 8, 30, 04, 00, 247)
 
 
-DEVICE_COLORS = {'midi_effect':2,
-				'audio_effect':5,
-				'instrument':3,
-				'Operator':4,
-				'DrumGroupDevice':6,
-				'MxDeviceMidiEffect':2,
-				'MxDeviceInstrument':3,
-				'MxDeviceAudioEffect':5,
-				'InstrumentGroupDevice':3,
-				'MidiEffectGroupDevice':2,
-				'AudioEffectGroupDevice':5}
+DEVICE_COLORS = {'midi_effect':1,
+				'audio_effect':1,
+				'instrument':1,
+				'Operator':1,
+				'DrumGroupDevice':1,
+				'MxDeviceMidiEffect':1,
+				'MxDeviceInstrument':1,
+				'MxDeviceAudioEffect':1,
+				'InstrumentGroupDevice':1,
+				'MidiEffectGroupDevice':1,
+				'AudioEffectGroupDevice':1}
 
 SELECTED_COLORSHIFT = 7
 
@@ -94,6 +94,17 @@ def get_track(device):
 	if device:
 		track = dig(device)
 	return track
+
+
+class PO10CancellableBehaviourWithRelease(CancellableBehaviourWithRelease):
+
+	def update_button(self, component, mode, selected_mode):
+		button = component.get_mode_button(mode)
+		groups = component.get_mode_groups(mode)
+		selected_groups = component.get_mode_groups(selected_mode)
+		value = (mode == selected_mode or bool(groups & selected_groups))*32 or 1
+		button.mode_selected_color = value
+		button.update()
 
 
 class SimpleDeviceProvider(EventObject):
@@ -126,6 +137,7 @@ class SimpleDeviceProvider(EventObject):
 		if liveobj_changed(self._device, device) and not self.is_locked_to_device:
 			self._device = device
 			self.notify_device()
+
 
 
 class PO10EncoderElement(CodecEncoderElement):
@@ -763,52 +775,12 @@ class PO10DeviceComponent(DeviceComponent):
 
 
 
-class PO10DeviceSelectorComponent(Component):
+class PO10DeviceSelectorComponent(DeviceSelectorComponent):
 
 
 	def __init__(self, script, device_component, prefix = '@d', *a, **k):
-		super(PO10DeviceSelectorComponent, self).__init__(*a, **k)
-		self.log_message = script.log_message
-		self._script = script
-		self._prefix = prefix
 		self._device_component = device_component
-		self._buttons = []
-		self._offset = 0
-		self._device_registry = []
-		self._watched_device = None
-		self._device_colors = DEVICE_COLORS
-		self._selected_colorshift = SELECTED_COLORSHIFT
-		self._device_listener.subject = self.song
-		self._device_listener()
-
-
-	def disconnect(self, *a, **k):
-		super(PO10DeviceSelectorComponent, self).disconnect()
-
-
-	def set_matrix(self, matrix):
-		buttons = []
-		if not matrix is None:
-			for button, address in matrix.iterbuttons():
-				#self._script.log_message('button is: ' + str(button))
-				if not button is None:
-					button.use_default_message()
-					button.set_enabled(True)
-					buttons.append(button)
-		self.set_buttons(buttons)
-
-
-	def set_buttons(self, buttons):
-		self._buttons = buttons or []
-		self._on_button_value.replace_subjects(self._buttons)
-		self.update()
-
-
-	@listens_group('value')
-	def _on_button_value(self, value, sender):
-		if self.is_enabled():
-			if value:
-				self.select_device(self._buttons.index(sender))
+		super(PO10DeviceSelectorComponent, self).__init__(script, prefix, *a, **k)
 
 
 	def select_device(self, index):
@@ -817,77 +789,9 @@ class PO10DeviceSelectorComponent(Component):
 			preset = None
 			if index < len(self._device_registry):
 				preset = self._device_registry[index]
-			#debug('before view device:', preset)
 			if not preset is None and isinstance(preset, Live.Device.Device):
-				debug('view device:', preset)
 				self.song.view.select_device(preset)
 				self._device_component.set_device(preset)
-			self.update()
-
-
-	def scan_all(self):
-		debug('scan all--------------------------------')
-		self._device_registry = [None for index in range(len(self._buttons))]
-		prefix = str(self._prefix)+':'
-		offset = self._offset
-		preset = None
-		for track in self.song.tracks:
-			for device in self.enumerate_track_device(track):
-				for index, entry in enumerate(self._device_registry):
-					key = str(prefix + str(index + 1 + offset))
-					if device.name.startswith(key+' ') or device.name == key:
-						self._device_registry[index] = device
-					elif (device.name.startswith('*' +key+' ') or device.name == ('*' +key)) and device.can_have_chains and len(device.chains) and len(device.chains[0].devices):
-						self._device_registry[index] = device.chains[0].devices[0]
-		for return_track in self.song.return_tracks:
-			for device in self.enumerate_track_device(return_track):
-				for index, entry in enumerate(self._device_registry):
-					key = str(prefix + str(index + 1 + offset))
-					if device.name.startswith(key+' ') or device.name == key:
-						self._device_registry[index] = device
-					elif (device.name.startswith('*' +key+' ') or device.name == ('*' +key))  and device.can_have_chains and len(device.chains) and len(device.chains[0].devices):
-						self._device_registry[index] = device.chains[0].devices[0]
-		for device in self.enumerate_track_device(self.song.master_track):
-			for index, entry in enumerate(self._device_registry):
-				key = str(prefix + str(index + 1 + offset))
-				if device.name.startswith(key+' ') or device.name == key:
-					self._device_registry[index] = device
-				elif (device.name.startswith('*' +key+' ') or device.name == ('*' +key))  and device.can_have_chains and len(device.chains) and len(device.chains[0].devices):
-					self._device_registry[index] = device.chains[0].devices[0]
-		self.update()
-		#debug('device registry: ' + str(self._device_registry))
-
-
-	def enumerate_track_device(self, track):
-		devices = []
-		if hasattr(track, 'devices'):
-			for device in track.devices:
-				devices.append(device)
-				if device.can_have_chains:
-					for chain in device.chains:
-						for chain_device in self.enumerate_track_device(chain):
-							devices.append(chain_device)
-		return devices
-
-
-	@listens('appointed_device')
-	def _device_listener(self, *a, **k):
-		#debug('device_listener')
-		self._on_name_changed.subject = self.song.appointed_device
-		self._watched_device = self.song.appointed_device
-		if self.is_enabled():
-			self.update()
-
-
-	@listens('name')
-	def _on_name_changed(self):
-		#debug('on name changed')
-		if self._watched_device == self.song.appointed_device:
-			self.scan_all()
-
-
-	def on_enabled_changed(self):
-		if self.is_enabled():
 			self.update()
 
 
@@ -896,22 +800,18 @@ class PO10DeviceSelectorComponent(Component):
 			if len(self._device_registry) != len(self._buttons):
 				self.scan_all()
 			name = 'None'
-			dev = self._device_component._device if self._device_component else None
+			#dev = self._device_component._device if self._device_component else None
+			dev = self._device_component._device
+			if isinstance(dev, ModDeviceProxy):
+				dev = dev._mod_device
+			#debug('device_selector dev:', dev)
 			offset = self._offset
 			if self._buttons:
 				for index in range(len(self._buttons)):
 					preset = self._device_registry[index]
 					button = self._buttons[index]
 					if isinstance(button, ButtonElement):
-						#if isinstance(preset, Live.Device.Device) and hasattr(preset, 'name'):
-						#	name = preset.name
-						#	dev_type = preset.type
-						#	dev_class = preset.class_name
-						#	val = (dev_class in self._device_colors and self._device_colors[dev_class]) or (dev_type in self._device_colors and self._device_colors[dev_type]) or 7
-						#	selected_shift = (dev == preset)*self._selected_colorshift
-						if dev == None:
-							button.turn_off()
-						elif preset == dev:
+						if dev is not None and preset == dev :
 							button.turn_on()
 						else:
 							button.turn_off()
@@ -1142,12 +1042,14 @@ class PO10(LividControlSurface):
 
 	def _setup_main_device_selector(self):
 		self._main_device_selector = PO10DeviceSelectorComponent(self, device_component = self._main_device, prefix = '@m')
+		self._main_device_selector._device_colors = DEVICE_COLORS
 		self._main_device_selector.layer = Layer(priority = 6, matrix = self._main_button_matrix)
 		self._main_device_selector.set_enabled(True)
 
 
 	def _setup_device_selector(self):
 		self._device_selector = ModDeviceSelector(self, device_component = self._device, prefix = '@d')
+		self._device_selector._device_colors = DEVICE_COLORS
 		self._device_selector.layer = Layer(priority = 6, matrix = self._device_button_matrix)
 		self._device_selector.set_enabled(True)
 
@@ -1168,9 +1070,9 @@ class PO10(LividControlSurface):
 
 	def _setup_track_mutes(self):
 		self._AllBeats_channel_strip = ChannelStripComponent()
-		self._AllBeats_channel_strip._invert_mute_feedback = True
+		self._AllBeats_channel_strip._invert_mute_feedback = False
 		self._BD_channel_strip = ChannelStripComponent()
-		self._BD_channel_strip._invert_mute_feedback = True
+		self._BD_channel_strip._invert_mute_feedback = False
 		self._scan_for_track_mutes()
 
 
@@ -1248,7 +1150,7 @@ class PO10(LividControlSurface):
 		self._main_modes = ModesComponent(name = 'MainModes')
 		self._main_modes.add_mode('disabled', None)
 		self._main_modes.add_mode('Main', [self._session, self._session_navigation, self._session_navigation.unshift_layer])
-		self._main_modes.add_mode('Shifted', [self._session, self._session_navigation, self._session_navigation.shift_layer], behaviour = CancellableBehaviourWithRelease())
+		self._main_modes.add_mode('Shifted', [self._session, self._session_navigation, self._session_navigation.shift_layer], behaviour = ColoredCancellableBehaviourWithRelease(color='DefaultButton.Alert', off_color='DefaultButton.On'))
 		self._main_modes.layer = Layer(priority = 6, Shifted_button = self._shift_button)
 		self._main_modes.selected_mode = 'disabled'
 
