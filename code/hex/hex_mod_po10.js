@@ -817,11 +817,16 @@ function refresh_c_keys()
 			keygui.message(15, 0, 5);
 			keygui.message(14, 0, 2);
 			keygui.message(13, 0, muted ? 4 : 3);
-			var i=4;do{
+			keygui.message(12, 0, 4);
+			keygui.message(11, 0, 7);
+			keygui.message(10, 0, 7);
+			keygui.message(9, 0, 4);
+			keygui.message(8, 0, 4);
+			/*var i=4;do{
 				var v = (i==p)+6;
 				batch.unshift(Math.floor(i==p));
 				keygui.message(i+8, 0, v);
-			}while(i--);
+			}while(i--);*/
 			var i=7;do{
 				var v = (i==Math.floor((global_offset)/16));
 				//debug('new offset:', global_offset, v, i, Math.floor((global_offset)/16));
@@ -1224,7 +1229,7 @@ function _c_key(x, y, val)
 						refresh_c_keys();
 					}
 				}
-				else if(num<13)
+				/*else if(num<13)
 				{
 					if((val>0)&&(pad_pressed<0))
 					{
@@ -1249,15 +1254,31 @@ function _c_key(x, y, val)
 						key_pressed = -1;
 					}
 					break;
-				}
+				}*/
 				else if(val>0)
 				{
-					if(num==13)
+					if(num==8)
+					{
+						//reverse_all_samples()
+					}
+					else if(num==9)
+					{
+						//bitcrusher_toggle();
+					}
+					else if(num==10)
+					{
+						reset_multipliers();
+					}
+					else if(num==11)
+					{
+						reset_speeds();
+					}
+					else if(num==13)
 					{
 						this.patcher.getnamed('moddial').message('int', 127);
 						refresh_c_keys();
 					}
-					if(num==14)
+					else if(num==14)
 					{
 						_reset_params_to_default();
 					}
@@ -3766,15 +3787,17 @@ function reset_speeds()
 	{
 		set_speed(i, 4);
 	}
+	Speed.message('int', 4);
 }
 
 function reset_multipliers()
 {
 	for(var i=0;i<16;i++)
 	{
-		part[i].multiplier = 1;
+		//part[i].multiplier = 1;
 		part[i].obj.multiplier.message('float', 1);
 	}
+	Multiplier.message('float', 1);
 }
 
 forceload(this);
