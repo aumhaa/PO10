@@ -1638,10 +1638,12 @@ class LegacyModDeviceProxy(ModDeviceProxy):
 
 
 	def set_number_custom(self, number, *a):
+		debug('set_number_custom', number)
 		self._custom_parameter = [None for index in range(number)]
 
 
 	def set_custom_parameter(self, number, parameter, rebuild = True, *a):
+		debug('custom=', parameter)
 		if number < len(self._custom_parameter):
 			debug('custom=', parameter)
 			if isinstance(parameter, Live.DeviceParameter.DeviceParameter) or parameter is None:
@@ -1662,22 +1664,30 @@ class LegacyModDeviceProxy(ModDeviceProxy):
 		debug('set all params to default')
 		for param in self._parameters:
 			if param:
-				name = param.name
 				#debug('param name:', name)
-				if name:
-					for item in name.split(' '):
-						if len(str(item)) and str(item)[0]=='@':
-							vals = item[1:].split(':')
-							if vals[0] in ['rst', 'def', 'defaults']:
-								self.set_param_to_default(param, vals[1])
-							else:
-								debug('no def value...')
+				self.set_param_to_default(param)
 
 
-	def set_param_to_default(self, param, val):
-		rst_val = float(val)/100
-		newval = float(rst_val * (param.max - param.min)) + param.min
-		param.value = newval
+	def set_mod_parameter_to_default(self, num, *a):
+		debug('set_mod_parameter_to_default', num)
+		if liveobj_valid(self._parameters[num]):
+			self.set_param_to_default(self._parameters[num])
+
+
+	def set_param_to_default(self, param):
+		name = param.name
+		debug('param name:', name)
+		if name:
+			for item in name.split(' '):
+				if len(str(item)) and str(item)[0]=='@':
+					vals = item[1:].split(':')
+					if vals[0] in ['rst', 'def', 'defaults']:
+						val = vals[1]
+						rst_val = float(val)/100
+						newval = float(rst_val * (param.max - param.min)) + param.min
+						param.value = newval
+					else:
+						debug('no def value...')
 
 
 	def toggle_param(self, param):
@@ -1685,6 +1695,14 @@ class LegacyModDeviceProxy(ModDeviceProxy):
 			param.value = param.max
 		else:
 			param.value = param.min
+
+
+	def get_parameter_by_index(self, index):
+		try:
+			return self._parameters[index]
+		except:
+			return None
+
 
 
 class ModClient(NotifyingControlElement):
@@ -2234,6 +2252,7 @@ class ModRouter(Component):
 					break
 		#debug('modrouter is_mod() returned device: ' + str(mod_device))
 		return mod_device
+
 
 
 def original_device_to_appoint(device):
