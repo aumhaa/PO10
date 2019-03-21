@@ -256,6 +256,8 @@ for(var i=0;i<7;i++){
 }
 
 var current_rule = 0;
+var bitcrusherOnOff_api;
+var bitcrusherOnOff_value;
 
 /*/////////////////////////////////////////
 ///// script initialization routines //////
@@ -650,7 +652,7 @@ function setup_translations()
 
 function setup_colors()
 {
-	mod.Send( 'fill_color_map', 'Monochrome', 1, 1, 1, 1, 8, 1);
+	mod.Send( 'fill_color_map', 'Monochrome', 1, 1, 1, 1, 8, 1, 1, 16);
 }
 
 function refresh_pads()
@@ -828,9 +830,16 @@ function refresh_c_keys()
 			var p = presets[selected.num]-1;
 			var muted = this.patcher.getnamed('moddial').getvalueof() == 0;
 			debug('muted:', muted);
+			//a bit convoluted:  batch goes out to controller, and first part of batch is sent to keygui, but second half of
+			//key gui is rendered directly since it's different from the values sent to the non-rgb controller buttons
 			batch.unshift(8);
 			batch.unshift(2);
 			batch.unshift(muted ? 5 : 1);
+			batch.unshift(0);
+			batch.unshift(0);
+			batch.unshift(0);
+			batch.unshift(0);
+			batch.unshift(bitcrusherOnOff_value ? 5 : 1);
 			keygui.message(15, 0, 5);
 			keygui.message(14, 0, 2);
 			keygui.message(13, 0, muted ? 4 : 3);
@@ -838,7 +847,7 @@ function refresh_c_keys()
 			keygui.message(11, 0, 7);
 			keygui.message(10, 0, 7);
 			keygui.message(9, 0, 4);
-			keygui.message(8, 0, 4);
+			keygui.message(8, 0, bitcrusherOnOff_value ? 10 : 2);
 			/*var i=4;do{
 				var v = (i==p)+6;
 				batch.unshift(Math.floor(i==p));
@@ -855,6 +864,8 @@ function refresh_c_keys()
 				//debug('batch is:', batch);
 				mod.Send( 'receive_translation', 'keys_batch_fold', 'batch_row_fold', batch);
 			}
+			//keygui.message(8, 0, bitcrusherOnOff_value ? 4 : 0);
+			//debug('sending to bitcrusherOnOff:', bitcrusherOnOff_value ? 4 : 0)
 			break;
 		default:
 			var i=15;do{
@@ -1319,36 +1330,49 @@ function _c_key(x, y, val)
 				}*/
 				else if(val>0)
 				{
+					//N24
 					if(num==8)
 					{
 						//reverse_all_samples()
-					}
-					else if(num==9)
-					{
 						toggle_bitcrusher();
 					}
+					//N25
+					else if(num==9)
+					{
+						//FOCUS ON FIRST INSERT
+					}
+					//N26
 					else if(num==10)
 					{
-						reset_multipliers();
+						//FOCUS ON SECOND INSERT
 					}
+					//N27
 					else if(num==11)
 					{
-						reset_speeds();
+						//FOCUS ON THIRD INSERT
 					}
+					//N28
+					else if(num==12)
+					{
+
+					}
+					//N29
 					else if(num==13)
 					{
 						this.patcher.getnamed('moddial').message('int', 127);
 						refresh_c_keys();
 					}
+					//N30
 					else if(num==14)
 					{
 						_reset_params_to_default();
 					}
+					//N31
 					else if(num==15)
 					{
 						this.patcher.getnamed('moddial').message('int', 0);
 						clear_pattern(selected);
-						reset_params_to_default();
+						_reset_params_to_default();
 						//select_pattern(selected.num);
 						this.patcher.getnamed('moddial').message('int', 127);
 					}
@@ -3869,6 +3893,15 @@ function reset_multipliers()
 	Multiplier.message('float', 1);
 }
 
+function bitcrusherOnOff_callback(val)
+{
+	if(val[0]=='value')
+	{
+		bitcrusherOnOff_value = val[1];
+		refresh_c_keys();
+	}
+}
+
 function detect_custom_devices()
 {
 	finder.goto('this_device');
@@ -3883,7 +3916,11 @@ function detect_custom_devices()
 		finder.id = parseInt(found_devices[index+1]);
 		finder.goto('parameters', 0);
 		var new_parameter_id = parseInt(finder.id);
+		bitcrusherOnOff_api = new LiveAPI(bitcrusherOnOff_callback, 'live_set');
+		bitcrusherOnOff_api.id = new_parameter_id;
+		bitcrusherOnOff_api.property = 'value';
 		custom_device_ids[0] = new_parameter_id;
+
 		mod.Send('send_explicit', 'receive_device_proxy', 'set_custom_parameter', 0, 'id', new_parameter_id);
 		debug('set parameter:', new_parameter_id, finder.get('name'));
 	}
