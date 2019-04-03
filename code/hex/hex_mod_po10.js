@@ -23,8 +23,8 @@ var script = this;
 
 aumhaa = require('_base');
 //aumhaa.init_deprecated_prototypes(this);
-var FORCELOAD = true;
-var DEBUG = true;
+var FORCELOAD = false;
+var DEBUG = false;
 aumhaa.init(this);
 
 var NEW_DEBUG = false;
@@ -1359,6 +1359,7 @@ function _c_key(x, y, val)
 					//N29
 					else if(num==13)
 					{
+						resync();
 						this.patcher.getnamed('moddial').message('int', 127);
 						refresh_c_keys();
 					}
@@ -1366,6 +1367,8 @@ function _c_key(x, y, val)
 					else if(num==14)
 					{
 						_reset_params_to_default();
+						reset_multipliers();
+						reset_speeds();
 					}
 					//N31
 					else if(num==15)
@@ -1374,6 +1377,9 @@ function _c_key(x, y, val)
 						clear_pattern(selected);
 						_reset_params_to_default();
 						//select_pattern(selected.num);
+						reset_multipliers();
+						reset_speeds();
+						resync();
 						this.patcher.getnamed('moddial').message('int', 127);
 					}
 				}
@@ -2715,11 +2721,13 @@ function copy_global_preset(src, dest)
 //reset all parts to play from top...not quantized.
 function resync()
 {
-	var i=15;do{
+	/*var i=15;do{
 		//part[i].obj.offset.message('int', 0);
 		part[i].obj.resync.message('bang');
-	}while(i--);
+	}while(i--);*/
 	//messnamed(unique+('restart'), 0);
+	this.patcher.getnamed('resync').message('bang');
+
 }
 
 //begin or end sequence play from poly_play poly~
@@ -3850,8 +3858,8 @@ function _reset_params_to_default()
 {
 	debug('_reset_params_to_default');
 	mod.Send( 'send_explicit', 'receive_device', 'set_all_params_to_defaults' );
-	reset_speeds();
-	reset_multipliers();
+	//reset_speeds();
+	//reset_multipliers();
 }
 
 function reset_sequence()
@@ -3973,5 +3981,14 @@ function set_mod_parameter_to_default(num)
 {
 	mod.Send( 'send_explicit', 'receive_device_proxy', 'set_mod_parameter_to_default', num+1);
 }
+
+function hardkill_patch_resync()
+{
+		debug('hardkill_patch_resync');
+		reset_multipliers();
+		reset_speeds();
+		resync();
+}
+
 
 forceload(this);

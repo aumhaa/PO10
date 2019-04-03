@@ -115,6 +115,7 @@ function _Hardkill()
 	if(finder.id)
 	{
 		debug('hardkill');
+		messnamed('from_hardkill_patch', 'hardkill_patch_resync');
 		finder.call('hardkill');
 	}
 }
