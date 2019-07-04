@@ -139,6 +139,8 @@ function nodeLog(){
 //received when node.script starts
 function node_script_started(){
 	node_script.message('update_paths');
+	package_button.message('active', 1);
+	logs_button.message('active', 1);
 }
 
 //resolve all used paths and store in dict for access across max
@@ -156,8 +158,6 @@ function resolve_paths(){
 	getConformedPath('appPath', this.max.apppath);
 	getConformedPath('rootPath', this.max.apppath.split('/')[0]);
 	//if(nodeIsRunning()){node_script.message('update_paths');}
-	package_button.message('active', 1);
-	logs_button.message('active', 1);
 }
 
 function list_paths(){
@@ -175,19 +175,10 @@ function detect_live_preferences_path(Userpath){
  	var major=liveApiApp.call("get_major_version");
 	var minor=liveApiApp.call('get_minor_version');
 	var bugfix=liveApiApp.call('get_bugfix_version');
-	live_version = (major+'.'+minor+'.'+bugfix);
+	//on non-incrementals, ableton doesn't add the sub version to the log file path
+	live_version = (major+'.'+minor+(bugfix?('.'+bugfix):''));
 	debug('Live version:', live_version);
 	parse_live_log();
-}
-
-//on non-incrementals, ableton doesn't add the sub version to the log file path
-function remove_trailing_zero(version){
-	var len = version.length;
-	if(version[len-1]=='0'){
-		version = version.slice(0, len-2);
-	}
-	debug('anticipated log version:', version);
-	return version;
 }
 
 //parse the live prefs directory to find the correct log.txt to parse
@@ -196,7 +187,7 @@ function parse_live_log(){
 	var found_log = false;
 	var m = new Folder(conformedPaths.absolute.userPath+'/Library/Preferences/Ableton');
 	//debug('looking for log @:', m.pathname);
-	var version = remove_trailing_zero(live_version);
+	var version = live_version;
 	while((!m.end)&&(found_log==false)){
 		while((!m.end)&&(found_log==false)){
 			//debug(m.filename);
@@ -237,16 +228,16 @@ function read_live_log(path){
 		//debug('reading line:', lineinc);
 		lineinc += 1;
 		var line = log_file.readline(200);
-		var a = line.split('info: ');
-		if(regexp.python.test(a[1])==1){
+		var a = line.split('info:');
+		if(regexp.docscheck.test(a[1])==1){
 			//debug('checking...');
 			line = log_file.readline(200);
 			var b = line.split('info:');
-			if(regexp.python.test(b[1])==1){
-				var new_path = b[1].replace(regexp.python, '');
+			if(regexp.docs.test(b[1])==1){
+				var new_path = b[1].replace(regexp.docs, '');
 				new_path = new_path.slice(1);
 				//livePath = conformedPaths.absolute.rootPath+new_path;
-				new_path = new_path.replace(regexp.pythonremove, '');
+				new_path = new_path.replace(regexp.docsremove, '');
 				livePath = new_path + 'App-Resources/MIDI Remote Scripts/';
 			}
 		}
