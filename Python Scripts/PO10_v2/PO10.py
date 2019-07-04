@@ -905,7 +905,6 @@ class SkippingSessionRingScenePager(SessionRingScenePager):
 		for scene_number in self._tagged_scene_indexes:
 			if current_index > scene_number:
 				can = True
-		debug('can_scroll_up', can)
 		return can
 
 	def can_scroll_down(self):
@@ -914,7 +913,6 @@ class SkippingSessionRingScenePager(SessionRingScenePager):
 		for scene_number in self._tagged_scene_indexes:
 			if current_index < scene_number:
 				can = True
-		debug('can_scroll_down', can)
 		return can
 
 	def do_scroll_up(self):
@@ -929,7 +927,7 @@ class SkippingSessionRingScenePager(SessionRingScenePager):
 
 
 	def scan_scenes(self):
-		debug('scan_scenes!')
+		#debug('scan_scenes!')
 		prefix = str(self._parent._prefix)
 		self._tagged_scene_indexes = []
 		scenes = self._parent.song.scenes

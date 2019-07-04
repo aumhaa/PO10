@@ -157,6 +157,7 @@ function resolve_paths(){
 	getConformedPath('rootPath', this.max.apppath.split('/')[0]);
 	//if(nodeIsRunning()){node_script.message('update_paths');}
 	package_button.message('active', 1);
+	logs_button.message('active', 1);
 }
 
 function list_paths(){
@@ -267,6 +268,16 @@ function install_python_scripts(){
 	node_script.message('install_python_scripts');
 }
 
+function install_OJI(){
+	//if(nodeIsRunning()){node_script.message('installPackage');}
+	node_script.message('installOJI');
+}
+
+function install_OJI_scripts(){
+	//if(nodeIsRunning()){node_script.message('installPackage');}
+	node_script.message('install_OJI_Scripts');
+}
+
 //request log.txt and maxConsole be zipped to "~/Desktop" by node.script
 function write_log(){
 	//if(nodeIsRunning()){node_script.message('write_log');}
@@ -288,7 +299,6 @@ function returnConformedPath(type, path_boot, path_absolute){
 
 function package_installed(){
 	scripts_button.message('active', 1);
-	logs_button.message('active', 1);
 }
 
 forceload(this);
