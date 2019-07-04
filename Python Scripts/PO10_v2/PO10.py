@@ -1,4 +1,4 @@
-# by amounra 0615 : http://www.aumhaa.com
+# by amounra 0719 : http://www.aumhaa.com
 
 from __future__ import with_statement
 import Live
@@ -17,7 +17,7 @@ from ableton.v2.control_surface.component import Component
 from ableton.v2.control_surface.input_control_element import *
 from ableton.v2.control_surface.components.scene import SceneComponent
 from ableton.v2.control_surface.components.session import SessionComponent
-from ableton.v2.control_surface.components.session_navigation import SessionNavigationComponent
+from ableton.v2.control_surface.components.session_navigation import SessionNavigationComponent, SessionRingScenePager
 from ableton.v2.control_surface.components.session_ring import SessionRingComponent
 from ableton.v2.control_surface.mode import DelayMode, CompoundMode, AddLayerMode, LayerMode, ModesComponent, ModeButtonBehaviour #, CancellableBehaviour
 from ableton.v2.control_surface.layer import Layer
@@ -26,6 +26,7 @@ from ableton.v2.base.task import *
 from ableton.v2.control_surface.compound_element import CompoundElement
 from ableton.v2.control_surface.skin import Skin
 from ableton.v2.control_surface.device_provider import DeviceProvider
+from ableton.v2.control_surface.components.transport import TransportComponent
 
 """Imports from the Monomodular Framework"""
 from aumhaa.v2.control_surface.components.device import DeviceComponent, DeviceBankRegistry
@@ -891,6 +892,85 @@ class PO10ModDeviceProvider(ModDeviceProvider):
 
 
 
+class SkippingSessionRingScenePager(SessionRingScenePager):
+
+	def __init__(self, *a, **k):
+		super(SessionRingScenePager, self).__init__(*a, **k)
+		self.page_size = self._session_ring.num_scenes
+		self._tagged_scene_indexes = []
+
+	def can_scroll_up(self):
+		can = False
+		current_index = self._session_ring.scene_offset
+		for scene_number in self._tagged_scene_indexes:
+			if current_index > scene_number:
+				can = True
+		debug('can_scroll_up', can)
+		return can
+
+	def can_scroll_down(self):
+		can = False
+		current_index = self._session_ring.scene_offset
+		for scene_number in self._tagged_scene_indexes:
+			if current_index < scene_number:
+				can = True
+		debug('can_scroll_down', can)
+		return can
+
+	def do_scroll_up(self):
+		current_index = self._session_ring.scene_offset
+		index = max(sorted([i for i in self._tagged_scene_indexes if i < current_index]))
+		self._session_ring.set_offsets(self._session_ring.track_offset, index)
+
+	def do_scroll_down(self):
+		current_index = self._session_ring.scene_offset
+		index = min(sorted([i for i in self._tagged_scene_indexes if i > current_index]))
+		self._session_ring.set_offsets(self._session_ring.track_offset, index)
+
+
+	def scan_scenes(self):
+		debug('scan_scenes!')
+		prefix = str(self._parent._prefix)
+		self._tagged_scene_indexes = []
+		scenes = self._parent.song.scenes
+		for index, scene in enumerate(scenes):
+			for item in scene.name.split(' '):
+				if item.startswith(prefix):
+					self._tagged_scene_indexes.append(index)
+		#debug('_tagged_scene_indexes:', self._tagged_scene_indexes)
+
+
+
+class SceneNavigationComponent(SessionNavigationComponent):
+
+	scene_pager_type = SkippingSessionRingScenePager
+
+	def __init__(self, prefix = '@top', *a, **k):
+		super(SceneNavigationComponent, self).__init__(*a, **k)
+		self._prefix = prefix
+		self._vertical_paginator.scrollable._parent = self
+		self.__on_scene_list_changed.subject = self.song
+		self.__on_selected_scene_changed.subject = self.song.view
+		self._on_selected_scene_name_changed.subject = self.song.view.selected_scene
+		self._vertical_paginator.scrollable.scan_scenes()
+		self._vertical_paginator.update()
+
+
+	@listens(u'scenes')
+	def __on_scene_list_changed(self):
+		self._vertical_paginator.scrollable.scan_scenes()
+
+	@listens(u'selected_scene')
+	def __on_selected_scene_changed(self, *a, **k):
+		self._on_selected_scene_name_changed.subject = self.song.view.selected_scene
+
+	@listens(u'name')
+	def _on_selected_scene_name_changed(self, *a, **k):
+		self._vertical_paginator.scrollable.scan_scenes()
+		self._vertical_paginator.update()
+
+
+
 class PO10(LividControlSurface):
 	__module__ = __name__
 	__doc__ = " Monomodular controller script for PO10 "
@@ -952,6 +1032,7 @@ class PO10(LividControlSurface):
 				self._setup_device_selector()
 				self._setup_kills()
 				self._setup_track_mutes()
+				self._setup_transport()
 				#self._setup_translations()
 				self._setup_mod()
 				self._setup_modes()
@@ -994,7 +1075,7 @@ class PO10(LividControlSurface):
 		self._device_encoder_button_matrix = ButtonMatrixElement(name = 'Device_Encoder_Button_Matrix', rows = [self._encoder_button[:8]])
 		self._send_encoder_button_matrix = ButtonMatrixElement(name = 'Send_Encoder_Button_Matrix', rows = [self._encoder_button[13:]])
 		self._main_button_matrix = ButtonMatrixElement(name = 'Main_Matrix', rows = [self._button[22:25]])
-		self._device_button_matrix = ButtonMatrixElement(name = 'Device_Matrix', rows = [self._button[:7] + self._button[8:16] + self._button[18:21]])
+		self._device_button_matrix = ButtonMatrixElement(name = 'Device_Matrix', rows = [self._button[0:7] + self._button[10:16] + self._button[20:21]])
 
 
 	def _define_sysex(self):
@@ -1012,9 +1093,13 @@ class PO10(LividControlSurface):
 		self._session_navigation.shift_layer = AddLayerMode(self._session_navigation, Layer(priority = 6, page_up_button = self._button[29]))
 		self._session_navigation.set_enabled(True)
 
+		self._session_skip = SceneNavigationComponent(session_ring = self._session_ring)
+		#self._session_skip.layer = AddLayerMode(self._session_skip, Layer(priority = 6, page_up_button = self._button[18], page_down_button = self._button[19]))
+		self._session_skip.layer = Layer(priority = 6, page_up_button = self._button[18], page_down_button = self._button[19])
+		self._session_skip.set_enabled(True)
+
 		self._session = SessionComponent(name = 'Session_Component', session_ring = self._session_ring, auto_name = True)
 		self._session._scenes[0].layer = Layer(priority = 6, launch_button = self._button[28])
-
 		#self.set_highlighting_session_component(self._session)
 		#self._session.set_show_highlight(True)
 		self._session.set_enabled(False)
@@ -1104,6 +1189,12 @@ class PO10(LividControlSurface):
 			track.mixer_device.track_activator.value = 1
 
 
+	def _setup_transport(self):
+		self._transport = TransportComponent()
+		self._transport.name = 'TransportComponent'
+		self._transport.layer = Layer(priority = 6, nudge_up_button = self._button[9], nudge_down_button = self._button[8])
+
+
 	def _setup_translations(self):
 		self._translations = TranslationComponent(self._translated_controls, user_channel_offset = 4, channel = 4)	# is_enabled = False)
 		self._translations.name = 'TranslationComponent'
@@ -1149,8 +1240,8 @@ class PO10(LividControlSurface):
 
 		self._main_modes = ModesComponent(name = 'MainModes')
 		self._main_modes.add_mode('disabled', None)
-		self._main_modes.add_mode('Main', [self._session, self._session_navigation, self._session_navigation.unshift_layer])
-		self._main_modes.add_mode('Shifted', [self._session, self._session_navigation, self._session_navigation.shift_layer], behaviour = ColoredCancellableBehaviourWithRelease(color='DefaultButton.Alert', off_color='DefaultButton.On'))
+		self._main_modes.add_mode('Main', [self._session, self._session_navigation, self._session_navigation.unshift_layer, self._session_skip])
+		self._main_modes.add_mode('Shifted', [self._session, self._session_navigation, self._session_navigation.shift_layer, self._session_skip], behaviour = ColoredCancellableBehaviourWithRelease(color='DefaultButton.Alert', off_color='DefaultButton.On'))
 		self._main_modes.layer = Layer(priority = 6, Shifted_button = self._shift_button)
 		self._main_modes.selected_mode = 'disabled'
 
