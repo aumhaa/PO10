@@ -1073,7 +1073,7 @@ class PO10(LividControlSurface):
 		self._device_encoder_button_matrix = ButtonMatrixElement(name = 'Device_Encoder_Button_Matrix', rows = [self._encoder_button[:8]])
 		self._send_encoder_button_matrix = ButtonMatrixElement(name = 'Send_Encoder_Button_Matrix', rows = [self._encoder_button[13:]])
 		self._main_button_matrix = ButtonMatrixElement(name = 'Main_Matrix', rows = [self._button[22:25]])
-		self._device_button_matrix = ButtonMatrixElement(name = 'Device_Matrix', rows = [self._button[0:7] + self._button[10:16] + self._button[20:21]])
+		self._device_button_matrix = ButtonMatrixElement(name = 'Device_Matrix', rows = [self._button[0:7] + self._button[8:10] + self._button[12:16] + self._button[20:21]])
 
 
 	def _define_sysex(self):
@@ -1190,7 +1190,7 @@ class PO10(LividControlSurface):
 	def _setup_transport(self):
 		self._transport = TransportComponent()
 		self._transport.name = 'TransportComponent'
-		self._transport.layer = Layer(priority = 6, nudge_up_button = self._button[9], nudge_down_button = self._button[8])
+		self._transport.layer = Layer(priority = 6, nudge_up_button = self._button[11], nudge_down_button = self._button[10])
 
 
 	def _setup_translations(self):
