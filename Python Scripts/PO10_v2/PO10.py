@@ -925,7 +925,6 @@ class SkippingSessionRingScenePager(SessionRingScenePager):
 		index = min(sorted([i for i in self._tagged_scene_indexes if i > current_index]))
 		self._session_ring.set_offsets(self._session_ring.track_offset, index)
 
-
 	def scan_scenes(self):
 		#debug('scan_scenes!')
 		prefix = str(self._parent._prefix)
@@ -1030,7 +1029,7 @@ class PO10(LividControlSurface):
 				self._setup_device_selector()
 				self._setup_kills()
 				self._setup_track_mutes()
-				self._setup_transport()
+				#self._setup_transport()
 				#self._setup_translations()
 				self._setup_mod()
 				self._setup_modes()
@@ -1059,6 +1058,8 @@ class PO10(LividControlSurface):
 		self._encoder = self._po10_linked_script._po10b_encoders
 		self._encoder_button = self._po10_linked_script._po10b_encoder_buttons
 
+		self._dummy_button = [MonoButtonElement(is_momentary = is_momentary, msg_type = MIDI_NOTE_TYPE, channel = 15, identifier = DUMMY_BUTTONS[index], name = 'Button_' + str(index), script = self, skin = self._skin, color_map = COLOR_MAP, optimized_send_midi = optimized, resource_type = resource) for index in range(4)]
+
 		self._shift_button = self._button[21]
 
 		self._matrix = ButtonMatrixElement(name = 'Matrix', rows = [self._grid[index*4:(index*4)+4] for index in range(4)])
@@ -1073,8 +1074,9 @@ class PO10(LividControlSurface):
 		self._device_encoder_button_matrix = ButtonMatrixElement(name = 'Device_Encoder_Button_Matrix', rows = [self._encoder_button[:8]])
 		self._send_encoder_button_matrix = ButtonMatrixElement(name = 'Send_Encoder_Button_Matrix', rows = [self._encoder_button[13:]])
 		self._main_button_matrix = ButtonMatrixElement(name = 'Main_Matrix', rows = [self._button[22:25]])
-		self._device_button_matrix = ButtonMatrixElement(name = 'Device_Matrix', rows = [self._button[0:7] + self._button[8:10] + self._button[12:16] + self._button[20:21]])
-
+		#self._device_button_matrix = ButtonMatrixElement(name = 'Device_Matrix', rows = [self._button[0:7] + self._button[8:10] + self._dummy_button[:2] + self._button[12:16] + self._button[20:21]])
+		self._device_button_matrix = ButtonMatrixElement(name = 'Device_Matrix', rows = [self._button[:4] + self._dummy_button[:2] + self._button[6:7] + self._button[8:16] + self._button[18:21]])
+		#self._device_button_matrix = ButtonMatrixElement(name = 'Device_Matrix', rows = [self._button[:7] + self._button[8:16] + self._button[18:21]])
 
 	def _define_sysex(self):
 		self._livid_settings = LividSettings(model = 9, control_surface = self)
@@ -1093,7 +1095,7 @@ class PO10(LividControlSurface):
 
 		self._session_skip = SceneNavigationComponent(session_ring = self._session_ring)
 		#self._session_skip.layer = AddLayerMode(self._session_skip, Layer(priority = 6, page_up_button = self._button[18], page_down_button = self._button[19]))
-		self._session_skip.layer = Layer(priority = 6, page_up_button = self._button[18], page_down_button = self._button[19])
+		self._session_skip.layer = Layer(priority = 6, page_up_button = self._button[4], page_down_button = self._button[5])
 		self._session_skip.set_enabled(True)
 
 		self._session = SessionComponent(name = 'Session_Component', session_ring = self._session_ring, auto_name = True)
