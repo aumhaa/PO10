@@ -38,6 +38,7 @@ var DEBUGANYTHING = false;
 var DEBUGSETTER = false;
 var SHOW_POLYSELECTOR = false;
 var SHOW_STORAGE = false;
+var MOD_DEBUG = false;
 
 
 var newdebug = (NEW_DEBUG&&Debug) ? Debug : function(){};
@@ -287,15 +288,127 @@ function init()
 	mod = new ModProxy(script, ['Send', 'SendDirect', 'restart']);
 	found_mod = new Mod(script, 'hex', unique, false);
 	//found_mod.debug = debug;
+	if(MOD_DEBUG){found_mod.debug = debug;}
 	mod_finder = new LiveAPI(mod_callback, 'this_device');
 	found_mod.assign_api(mod_finder);
+
+
+	setup_translations();
+	setup_colors();
+	for(var i in Vars)
+	{
+		script[Vars[i]] = this.patcher.getnamed(Vars[i]);
+	}
+	var y=15;do{
+		script['poly.'+(y+1)+'::pattern'] = make_pset_edit_input(y);
+		script['poly.'+(y+1)+'::velocity'] = make_tvel_edit_input(y);
+	}while(y--);
+	for(var i = 0; i < 16; i++)
+	{
+		var poly_num = i;
+		storage.message('priorty', 'poly.'+(poly_num+1), 'tickspattr', 10);
+		storage.message('priorty', 'poly.'+(poly_num+1),  'notetypepattr', 11);
+		storage.message('priorty', 'poly.'+(poly_num+1),  'notevaluepattr', 12);
+		part[i] = {'n': 'part', 'num':i, 'nudge':0, 'offset':0, 'channel':0, 'len':16, 'start':0,
+					'jitter':0, 'active':1, 'swing':.5, 'lock':1, 'ticks':480, 'notevalues':3, 'notetype':0,
+					'pushed':0, 'direction':0, 'noteoffset':i, 'root':i, 'octave':0, 'add':0, 'quantize':1, 'repeat':6, 'clutch':1,
+					'random':0, 'note':i, 'steps':11, 'mode':0, 'polyenable':0, 'polyoffset':36, 'mode':0, 'multiplier':1,
+					'hold':0, 'held':[], 'triggered':[], 'recdirty':0, 'timedivisor':16, 'basetime':1, 'behavior_enable':1};//'speed':480,'notevalue':'4n'
+		part[i].num = parseInt(i);
+		part[i].pattern = default_pattern.slice();
+		part[i].edit_buffer = default_pattern.slice();
+		part[i].edit_velocity = default_velocity.slice();
+		part[i].step_pattern = default_step_pattern.slice();
+		part[i].duration = default_duration.slice();
+		part[i].velocity = default_velocity.slice();
+		part[i].behavior = default_pattern.slice();
+		part[i].rulebends = default_pattern.slice();
+		part[i].note = default_pattern.slice();
+		part[i].obj = [];
+		part[i].obj.set = [];
+		part[i].obj.get = [];
+		for(var j in Objs)
+		{
+			//debug(Objs[j].Name);
+			part[i].obj[Objs[j].Name] = this.patcher.getnamed('poly').subpatcher(poly_num).getnamed(Objs[j].Name);
+			part[i].obj.set[Objs[j].Name] = make_obj_setter(part[i], Objs[j]);
+			part[i].obj.get[Objs[j].Name] = make_obj_getter(part[i], Objs[j]);
+		}
+		part[i].funcs = make_funcs(part[i]);
+		script['Speed'+(i+1)].message('set', part[i].obj.timedivisor.getvalueof());
+		//part[i].notes_assignment = part[i].obj.notes.getvalueof();
+		//part[i].note = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+		//part[i].note = default_note.slice();
+		//part[i].note = i;
+	}
+	script.rulemap = this.patcher.getnamed('settings').subpatcher().getnamed('rulemap');
+	this.patcher.getnamed('poly').message('target', 0);
+	selected_filter.message('offset', 1);
+	autoclip = new LiveAPI(callback, 'live_set');
+	step.message('int', 1);
+	messnamed(unique+'restart', 1);
+	transport_change.message('set', -1);
+	selected = part[0];
+	mod.Send('receive_device', 'set_number_custom', 4);
+	init_device();
+	deprivatize_script_functions(this);
+	//for(var i in script)
+	//{
+	//	if((/^_/).test(i))
+	//	{
+			//debug('replacing', i);
+	//		script[i.replace('_', "")] = script[i];
+	//	}
+	//}
+	Alive = 1;
+	clear_surface();
+
+	storage.message('recall', 1);
+
+	refresh_extras();
+	select_pattern(0);
+
+	mod.Send('receive_device', 'set_mod_device_type', 'Hex');
+	mod.Send( 'receive_device', 'set_number_params', 16);
+	//mod.Send( 'push_name_display', 'value', 0, 'Worky?');
+	//mod.Send( 'push_alt_name_display', 'value', 1, 'Worky!');
+
+	rotgate.message('int', 1);
+	messnamed(unique+'ColNOTE', ColNOTE);
+	messnamed(unique+'RowNOTE', RowNOTE);
+	this.patcher.getnamed('polyselector').hidden = Math.abs(SHOW_POLYSELECTOR-1);
+	if(SHOW_STORAGE)
+	{
+		this.patcher.getnamed('storage').message('clientwindow');
+		this.patcher.getnamed('storage').message('storagewindow');
+	}
+	post("Hex initialized.\n");
+	//mod.Send( 'set_mod_color', modColor);
+	//mod.Send( 'set_color_map', 'Monochrome', 127, 127, 127, 15, 22, 29, 36, 43);
+	//mod.Send( 'set_report_offset', 1);
+	/*var i=7;do{
+		mod.Send( 'key', i, (i==grid_mode)*8);
+		mod.Send( 'grid', i, 6, ENC_COLORS[i]);
+	}while(i--);*/
+	var i=3;do{
+		mod.Send( 'cntrlr_encoder_grid', 'mode', i, 2, 0);
+	}while(i--);
+	keymodegui.message('int', 8);
+	mod.Send('grid', 'value', 0, 0, 1);
+	//mod.Send('recieve_translation', )
+	select_pattern(0);
 }
+// else
+// {
+// 	_dissolve();
+// }
+// }
 
 function mod_callback(args)
 {
 	if((args[0]=='value')&&(args[1]!='bang'))
 	{
-		//debug('mod callback:', args);
+		debug('mod callback:', args);
 		if(args[1] in script)
 		{
 			script[args[1]].apply(script, args.slice(2));
@@ -319,116 +432,10 @@ function initialize(val)
 	{
 		debug('hex init');
 		mod=found_mod;
-		setup_translations();
-		setup_colors();
-		for(var i in Vars)
-		{
-			script[Vars[i]] = this.patcher.getnamed(Vars[i]);
-		}
-		var y=15;do{
-			script['poly.'+(y+1)+'::pattern'] = make_pset_edit_input(y);
-			script['poly.'+(y+1)+'::velocity'] = make_tvel_edit_input(y);
-		}while(y--);
-		for(var i = 0; i < 16; i++)
-		{
-			var poly_num = i;
-			storage.message('priorty', 'poly.'+(poly_num+1), 'tickspattr', 10);
-			storage.message('priorty', 'poly.'+(poly_num+1),  'notetypepattr', 11);
-			storage.message('priorty', 'poly.'+(poly_num+1),  'notevaluepattr', 12);
-			part[i] = {'n': 'part', 'num':i, 'nudge':0, 'offset':0, 'channel':0, 'len':16, 'start':0,
-						'jitter':0, 'active':1, 'swing':.5, 'lock':1, 'ticks':480, 'notevalues':3, 'notetype':0,
-						'pushed':0, 'direction':0, 'noteoffset':i, 'root':i, 'octave':0, 'add':0, 'quantize':1, 'repeat':6, 'clutch':1,
-						'random':0, 'note':i, 'steps':11, 'mode':0, 'polyenable':0, 'polyoffset':36, 'mode':0, 'multiplier':1,
-						'hold':0, 'held':[], 'triggered':[], 'recdirty':0, 'timedivisor':16, 'basetime':1, 'behavior_enable':1};//'speed':480,'notevalue':'4n'
-			part[i].num = parseInt(i);
-			part[i].pattern = default_pattern.slice();
-			part[i].edit_buffer = default_pattern.slice();
-			part[i].edit_velocity = default_velocity.slice();
-			part[i].step_pattern = default_step_pattern.slice();
-			part[i].duration = default_duration.slice();
-			part[i].velocity = default_velocity.slice();
-			part[i].behavior = default_pattern.slice();
-			part[i].rulebends = default_pattern.slice();
-			part[i].note = default_pattern.slice();
-			part[i].obj = [];
-			part[i].obj.set = [];
-			part[i].obj.get = [];
-			for(var j in Objs)
-			{
-				//debug(Objs[j].Name);
-				part[i].obj[Objs[j].Name] = this.patcher.getnamed('poly').subpatcher(poly_num).getnamed(Objs[j].Name);
-				part[i].obj.set[Objs[j].Name] = make_obj_setter(part[i], Objs[j]);
-				part[i].obj.get[Objs[j].Name] = make_obj_getter(part[i], Objs[j]);
-			}
-			part[i].funcs = make_funcs(part[i]);
-			script['Speed'+(i+1)].message('set', part[i].obj.timedivisor.getvalueof());
-			//part[i].notes_assignment = part[i].obj.notes.getvalueof();
-			//part[i].note = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-			//part[i].note = default_note.slice();
-			//part[i].note = i;
-		}
-		script.rulemap = this.patcher.getnamed('settings').subpatcher().getnamed('rulemap');
-		this.patcher.getnamed('poly').message('target', 0);
-		selected_filter.message('offset', 1);
-		autoclip = new LiveAPI(callback, 'live_set');
-		step.message('int', 1);
-		messnamed(unique+'restart', 1);
-		transport_change.message('set', -1);
-		selected = part[0];
-		mod.Send('receive_device', 'set_number_custom', 4);
-		init_device();
-		deprivatize_script_functions(this);
-		//for(var i in script)
-		//{
-		//	if((/^_/).test(i))
-		//	{
-				//debug('replacing', i);
-		//		script[i.replace('_', "")] = script[i];
-		//	}
-		//}
-		Alive = 1;
-		clear_surface();
-
-		storage.message('recall', 1);
-
-		refresh_extras();
-		select_pattern(0);
-
-		mod.Send('receive_device', 'set_mod_device_type', 'Hex');
-		mod.Send( 'receive_device', 'set_number_params', 16);
-		//mod.Send( 'push_name_display', 'value', 0, 'Worky?');
-		//mod.Send( 'push_alt_name_display', 'value', 1, 'Worky!');
-
-		rotgate.message('int', 1);
-		messnamed(unique+'ColNOTE', ColNOTE);
-		messnamed(unique+'RowNOTE', RowNOTE);
-		this.patcher.getnamed('polyselector').hidden = Math.abs(SHOW_POLYSELECTOR-1);
-		if(SHOW_STORAGE)
-		{
-			this.patcher.getnamed('storage').message('clientwindow');
-			this.patcher.getnamed('storage').message('storagewindow');
-		}
-		post("Hex initialized.\n");
-		//mod.Send( 'set_mod_color', modColor);
-		//mod.Send( 'set_color_map', 'Monochrome', 127, 127, 127, 15, 22, 29, 36, 43);
-		//mod.Send( 'set_report_offset', 1);
-		/*var i=7;do{
-			mod.Send( 'key', i, (i==grid_mode)*8);
-			mod.Send( 'grid', i, 6, ENC_COLORS[i]);
-		}while(i--);*/
-		var i=3;do{
-			mod.Send( 'cntrlr_encoder_grid', 'mode', i, 2, 0);
-		}while(i--);
-		keymodegui.message('int', 8);
-		mod.Send('grid', 'value', 0, 0, 1);
-		//mod.Send('recieve_translation', )
-		select_pattern(0);
-	}
-	else
-	{
-		_dissolve();
 	}
 }
+
+
 
 //make a closure to hold the setter function for any object in the poly patcher that is contained in the Objs dict
 function make_obj_setter(part, obj)

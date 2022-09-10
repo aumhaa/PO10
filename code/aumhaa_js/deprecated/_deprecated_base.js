@@ -1,9 +1,9 @@
 autowatch = 1;
 
-exports.mod = require('mod');
-exports.notifiers = require('notifiers');
-exports.util = require('util');
-//exports.scales = require('scales');
+exports.mod = require('_deprecated_mod');
+exports.notifiers = require('_deprecated_notifiers');
+exports.util = require('_deprecated_util');
+//exports.scales = require('_deprecated_scales');
 
 DEBUG = false;
 debug = DEBUG&&exports.util.Debug?exports.util.Debug:function(){};
@@ -11,10 +11,10 @@ debug = DEBUG&&exports.util.Debug?exports.util.Debug:function(){};
 exports.init = function(script)
 {
 	script['autowatch'] = 1;
-	var util = require('util');
-	var mod = require('mod');
-	var notifiers = require('notifiers');
-	//var scales = require('scales');
+	var util = require('_deprecated_util');
+	var mod = require('_deprecated_mod');
+	var notifiers = require('_deprecated_notifiers');
+	//var scales = require('_deprecated_scales');
 
 	Function.prototype.clone = function()
 	{
@@ -66,6 +66,6 @@ exports.init_deprecated_prototypes = function(script)
 			script[i] = dict[i];
 		}
 	}
-	
+
 	loadProtos(_deprecated);
 }

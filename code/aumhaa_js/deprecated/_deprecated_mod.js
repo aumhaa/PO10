@@ -1,6 +1,6 @@
 autowatch = 1;
 
-var util = require('util');
+var util = require('_deprecated_util');
 
 for(var i in util)
 {
@@ -46,11 +46,11 @@ ModComponent = function(parent, type, unique, legacy, attrs)
 			}
 			if(args[1]=='disconnect')
 			{
-				
+
 				self.disconnect();
 			}
 		}
-	}	
+	}
 }
 
 ModComponent.prototype.disconnect = function()
@@ -106,7 +106,7 @@ ModComponent.prototype.init = function()
 					{
 						//this.debug('adding property:', children[item].replace('property ', ''));
 						properties.push(children[item].replace('property ', ''));
-					}	
+					}
 				}
 				for(var item in properties)
 				{
@@ -124,14 +124,14 @@ ModComponent.prototype.init = function()
 						this.debug('client id returned is: ', this.finder.id);
 						this.modClientID = parseInt(modclient_id[1]);
 						this.finder.property = 'value';
-						var children = this.finder.info.toString().split(new RegExp("\n"));	
+						var children = this.finder.info.toString().split(new RegExp("\n"));
 						for(var item in children)
 						{
 							if(this.FUNCTION.test(children[item]))
 							{
 								this.debug('adding function:', children[item].replace('function ', ''));
 								this.modFunctions.push(children[item].replace('function ', ''));
-							}	
+							}
 						}
 						this.modAddresses = this.finder.call('addresses');
 						this.debug('addresses:', this.modAddresses);
