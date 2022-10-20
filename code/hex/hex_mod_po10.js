@@ -408,7 +408,7 @@ function mod_callback(args)
 {
 	if((args[0]=='value')&&(args[1]!='bang'))
 	{
-		debug('mod callback:', args);
+		// debug('mod callback:', args);
 		if(args[1] in script)
 		{
 			script[args[1]].apply(script, args.slice(2));
@@ -3679,17 +3679,22 @@ function _select_chain(chain_num)
 	{
 		//mod.Send( 'set_device_parent', devices[selected.channel]);
 		//mod.Send( 'set_device_chain', Math.max(0, Math.min(chain_num + global_offset - global_chain_offset, 112)));
-		mod.Send( 'send_explicit', 'receive_device', 'set_mod_device_parent', 'id', devices[selected.channel]);
+		// mod.Send( 'send_explicit', 'receive_device', 'set_mod_device_parent', 'id', devices[selected.channel]);
 		//mod.Send( 'receive_device', 'set_mod_device_chain', Math.max(0, Math.min(chain_num + global_offset - global_chain_offset, 112)));
-		mod.Send( 'receive_device', 'set_mod_drum_pad', Math.max(0, Math.min(chain_num + global_offset - global_chain_offset, 112)));
+		mod.Send( 'send_explicit', 'receive_device_proxy', 'set_mod_device_parent', 'id', devices[selected.channel]);
+
+		// mod.Send( 'receive_device', 'set_mod_drum_pad', Math.max(0, Math.min(chain_num + global_offset - global_chain_offset, 112)));
+		mod.Send( 'receive_device_proxy', 'set_mod_drum_pad', Math.max(0, Math.min(chain_num + global_offset - global_chain_offset, 112)));
+
 	}
 	else
 	{
 		//mod.Send( 'set_device_single', devices[selected.channel]);
-		mod.Send( 'send_explicit', 'receive_device', 'set_mod_device_parent', 'id', devices[selected.channel], 1);
+		// mod.Send( 'send_explicit', 'receive_device', 'set_mod_device_parent', 'id', devices[selected.channel], 1);
+		mod.Send('send_explicit', 'receive_device_proxy', 'set_mod_device_parent', 'id', devices[selected.channel], 1);
 
 	}
-	mod.Send( 'receive_device', 'refresh_lcd');
+	// mod.Send( 'receive_device', 'refresh_lcd');
 	if(devices[selected.channel]==0)
 	{
 		showerror();
@@ -3735,7 +3740,8 @@ function _encoder(num, val)
 	//}
 	if(num<12)
 	{
-		mod.Send( 'receive_device', 'set_mod_parameter_value', num, val);
+		// mod.Send( 'receive_device', 'set_mod_parameter_value', num, val);
+		mod.Send( 'receive_device_proxy', 'set_mod_parameter_value', num, val);
 	}
 	else
 	{
